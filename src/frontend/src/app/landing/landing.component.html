@@ -1,0 +1,91 @@
+<style>
+    
+    img {
+        width: 100%;
+        max-height: 1000px;
+        max-width: 1000px;
+    }
+    
+    .flex-container {
+        display:flex;
+        flex-flow: row wrap;
+        justify-content: center;
+        padding-top: 20px;
+    }
+    
+    .container123{
+        display:flex;
+        flex-flow: row;
+        justify-content: center;
+    }
+    
+    .leftcontainer{
+        flex-basis: 85%;
+    }
+    .rightcontainter{
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start
+    }
+    
+    .imagecontainer {
+        height: 100%;
+        width: 100%;
+        max-width: 100%;
+        object-fit:cover;
+    }
+    .verticalradiogroup{
+        display: flex; 
+        flex-direction: column;
+    }
+    
+    </style>
+    
+    
+    
+    <div class="flex-container">
+        <div class="leftcontainer">
+            <div class="imagecontainer">
+                <figure>
+                    <img [src]='imageSrc'>
+                  </figure>
+            </div>
+            <div class="container123">
+              <mat-radio-group aria-labelledby="example-radio-group-label">
+                <mat-radio-button class="example-radio-button" *ngFor="let imageObj of dataset.images; let i = index" [value]="imageObj" (change)="radioChange(imageObj)" [checked] = "(i==0) ? true : false">
+              </mat-radio-button>
+            </mat-radio-group>
+
+            
+            </div>
+        </div>
+        <div class="rightcontainter">
+            <!-- <div class="verticalradiogroup"> -->
+            <mat-radio-group class="verticalradiogroup" aria-labelledby="example-radio-group-label" [(ngModel)] = "animaltype">
+
+              <mat-radio-button class="example-radio-button" value="turkey"> Turkey </mat-radio-button>
+              <mat-radio-button class="example-radio-button" value="beaver">Beaver</mat-radio-button>
+              <mat-radio-button class="example-radio-button" value="fox">Fox</mat-radio-button>
+              <mat-radio-button class="example-radio-button" value="bear">Bear</mat-radio-button>
+              <mat-radio-button class="example-radio-button" value="bobcat">Bobcat</mat-radio-button>
+              <mat-radio-button class="example-radio-button" value="badger">Badger</mat-radio-button>
+              <mat-radio-button class="example-radio-button" value="cougar">Cougar</mat-radio-button>
+              <mat-radio-button class="example-radio-button" value="deer">Deer</mat-radio-button>
+              <mat-radio-button class="example-radio-button" value="elk">Elk</mat-radio-button>
+              <mat-radio-button class="example-radio-button" value="wolf">Wolf</mat-radio-button>
+            </mat-radio-group>
+            <!-- </div> -->
+            <h4>Animal Count: {{animalcountslider.value}}</h4>
+            <mat-slider #animalcountslider
+            class="example-margin"
+            thumbLabel
+            [max]="10"
+            [min]="0"
+            [step]="1"
+            [tickInterval]="1"
+            [(ngModel)] = "animalcount"
+            >
+        </mat-slider>
+        <button mat-raised-button (click)="submitdata()" color="primary">SUBMIT</button>
+        </div>
+    </div>
