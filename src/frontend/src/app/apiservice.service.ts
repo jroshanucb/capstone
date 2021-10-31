@@ -9,10 +9,13 @@ export class ApiserviceService {
   
   constructor(private http: HttpClient) { }
 
-  getImages(){
-    return this.http.get("http://localhost:5000/api/v1/resources/newclassify")
+  getImages(event_id:string){
+    if (event_id == "")
+      return this.http.get("http://localhost:5000/api/v1/resources/newclassify?event_id=0")
+    else
+      return this.http.get("http://localhost:5000/api/v1/resources/newclassify?event_id="+event_id)
   }
-  
+
   postAnnotation(data:string) {
     const headers = { 'content-type': 'application/json'}  
     const body=JSON.stringify(data);

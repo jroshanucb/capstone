@@ -37,23 +37,30 @@ imagesDict = {}
 with open('Berkeley-sswi_metadata.csv') as d:
     line = d.readline() # ignore first line which has column headings
     line = d.readline() # read next line
+    dup_keys = ""
     while line:
         values = line.split(',')
         key = values[4].strip()
         # dictionary values has format: species_name, count
         if key in imagesDict:
-            print("Key found in dictionary: ", key)
+            if key != "NA":
+                dup_keys = dup_keys + "; " + key
         species_count = values[2].strip()
         if species_count == "NA":
             species_count = "0"
         imagesDict[key] = values[0].strip() + ", " + species_count
         line = d.readline() # read next line
+# print("Duplicate Keys found in dictionary: ", dup_keys)
 d.close()
 
 config_db = "database.ini"
 params = config(config_db)
 conn = psycopg2.connect(**params)
 print("postgres database connection successful")
+sql_insert_stmt = "insert into public.event_images (event_id, image_group_id, image_url_1, image_url_2, image_url_3, species_name, count, blank_image, load_date) values "
+rows_values = 0
+sql_values_stmt = ""
+counter = 0
 
 with open('filenames.txt') as f:
     event_id = 0
@@ -64,7 +71,7 @@ with open('filenames.txt') as f:
             line3 = f.readline()
         while line3:
         # if line3:
-            print(line1, line2, line3)
+            # print(line1, line2, line3)
             event_id += 1
             name1 = line1.strip().split('.')
             name2 = line2.strip().split('.')
@@ -80,7 +87,7 @@ with open('filenames.txt') as f:
             if group_id in imagesDict:
                 blank_image = "false"
                 values = imagesDict[group_id]
-                print(values)
+                # print(values)
                 species_name_count = values.split(',')
                 species_name = species_name_count[0]
                 count = species_name_count[1]
@@ -91,14 +98,20 @@ with open('filenames.txt') as f:
 
             load_date = "to_date('24-10-2021','DD-MM-YYYY')"
 
-            sql_stmt = "insert into public.event_images (event_id, image_group_id, image_url_1, image_url_2, image_url_3, species_name, count, blank_image, load_date) "
-            sql_stmt += "values (" + str(event_id) + ", '" + group_id + "', '" + url1 + "', '" + url2 + "', '" + url3 + "', '" + species_name + "', " 
-            sql_stmt += count + ", " + blank_image + ", " + load_date + ")"
-            print(sql_stmt)
+            sql_values_stmt += "(" + str(event_id) + ", '" + group_id + "', '" + url1 + "', '" + url2 + "', '" + url3 + "', '" + species_name + "', " 
+            sql_values_stmt += count + ", " + blank_image + ", " + load_date + "), "
+            rows_values += 1
 
-            cur = conn.cursor()
-            cur.execute(sql_stmt)
-            conn.commit()
+            if (rows_values == 1000):
+                counter += 1
+                sql_stmt = sql_insert_stmt + sql_values_stmt[:-2]
+                # print(sql_stmt)
+                print("executing batch insert with 1000 rows: ", counter)
+                rows_values = 0
+                sql_values_stmt = ""
+                cur = conn.cursor()
+                cur.execute(sql_stmt)
+                conn.commit()
 
             # print("print from the DB query run: ", df)
 
@@ -107,4 +120,15 @@ with open('filenames.txt') as f:
                 line2 = f.readline()
                 if line2:
                     line3 = f.readline()
+
+# if last batch was not processed
+if (sql_values_stmt != ""):
+    sql_stmt = sql_insert_stmt + sql_values_stmt[:-2]
+    # print(sql_stmt)
+    sql_values_stmt = ""
+    cur = conn.cursor()
+    cur.execute(sql_stmt)
+    conn.commit()
+
+print("successfully inserted data")
 f.close()

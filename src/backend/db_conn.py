@@ -43,3 +43,13 @@ def load_db_table(config_db, query):
     print("postgres database connection successful")
     data = pd.read_sql(query, con = engine)
     return data
+
+# Take in a PostgreSQL table and outputs a pandas dataframe dictionary compatible using cursors
+def run_sql_query(config_db, query):
+    params = config(config_db)
+    conn = psycopg2.connect(**params)
+    print("postgres database connection successful")
+    cur = conn.cursor(dictionary=True)
+    cur.execute(query)
+    conn.commit()
+    return True

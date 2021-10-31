@@ -18,6 +18,7 @@ export class LandingComponent implements OnInit {
   animaltype = "";
   animalcheck = false;
   faCoffee = faCoffee;
+  event_id = "";
   
   constructor(private service: ApiserviceService) { }
   
@@ -27,12 +28,13 @@ export class LandingComponent implements OnInit {
     this.animaltype = data.animaltype
     this.imagegroupid = data.imagegroupid;
     this.dataset=data;
-    console.log(this.animaltype)
+    this.event_id=data.event_id
+    console.log(data)
   }
 
 
   ngOnInit(): void {
-    this.service.getImages().subscribe((data:any)=>{
+    this.service.getImages(this.event_id).subscribe((data:any)=>{
       this.datamapping(data)
     })
   }
@@ -42,15 +44,22 @@ export class LandingComponent implements OnInit {
   }
 
   submitdata(){
-    this.data = "{'imagegroupid' :" + this.imagegroupid + ", 'animal' :" + this.animaltype + ", 'animalcount : " + this.animalcount + "}";
+    this.data = "{'imagegroupid' :" + this.imagegroupid + ", 'animaltype' :" + this.animaltype + ", 'animalcount' : " + this.animalcount + ", 'event_id' : " + this.event_id + "}";
 
     this.service.postAnnotation(this.data).subscribe(data => {
       console.log(data)
-      this.service.getImages().subscribe((data:any)=>{
+      this.service.getImages(this.event_id).subscribe((data:any)=>{
         this.datamapping(data)
       });
     });
   }
 
+  submitskip(){
+    this.data = "{'imagegroupid' :" + this.imagegroupid + ", 'animaltype' :" + this.animaltype + ", 'animalcount' : " + this.animalcount + ", 'event_id' : " + this.event_id + "}";
+    console.log(this.data)
+    this.service.getImages(this.event_id).subscribe((data:any)=>{
+      this.datamapping(data)
+    });
+  }
   
 }

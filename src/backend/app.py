@@ -5,6 +5,8 @@ from flask_cors import CORS
 from random import seed
 from random import choice
 from db_conn import load_db_table
+import json
+import random
 seed(1)
 app = flask.Flask(__name__)
 CORS(app)
@@ -46,6 +48,14 @@ response5 = {
     "animaltype": "turkey"
 }
 
+response6 = { 
+    'imagegroupid': 'SSWI000000019636502', 
+    'images': ['https://capstone-trails-cam.s3.us-west-2.amazonaws.com/sswisimages/SSWI000000019636502C.jpg', 'https://capstone-trails-cam.s3.us-west-2.amazonaws.com/sswisimages/SSWI000000019636505A.jpg', 'https://capstone-trails-cam.s3.us-west-2.amazonaws.com/sswisimages/SSWI000000019636505B.jpg'], 
+    'animalcount': 1, 
+    'animaltype': 'deer'
+}
+
+
 sequence = [9, 4, 6, 1, 2, 3, 7]
 
 
@@ -53,36 +63,49 @@ sequence = [9, 4, 6, 1, 2, 3, 7]
 def home():
     return '''<h1>Project WI</h1>'''
 
+def getDictFromDf(df):
+    # assumes one row in the df
+    conv_response = {}
+    for index, row in df.iterrows():
+        # conv_response = "{ 'imagegroupid': '" + row['image_group_id'] + "', 'images': ['" + row['image_url_1'] + "', '" 
+        # conv_response += row['image_url_2'] + "', '" + row['image_url_3'] + "'" + "], " + "'animalcount': " + str(row['count']) + ", " 
+        # conv_response += "'animaltype': '" + row['species_name'] + "'" + "}"
+        conv_response['imagegroupid'] = row['image_group_id']
+        conv_response['images'] = [row['image_url_1'], row['image_url_2'], row['image_url_3']]
+        conv_response['animalcount'] = row['count']
+        conv_response['animaltype'] = row['species_name']
+        conv_response['animaltype2'] = row['species_name']
+        conv_response['event_id'] = row['event_id']
+        animals = ["Turkey", "Cottontail", "Fox, Gray", "Fox, Red" "Bear", "Coyote", "Opossum", "Raccoon", "Snowshoe Hare", "Deer", "Elk", "Wolf"]
+        if conv_response['animaltype'] not in animals:
+            conv_response['animaltype'] = "Other"
+    return conv_response
+
 # A route to return new set of images.
-
-
 @app.route('/api/v1/resources/newclassify', methods=['GET'])
 def api_all():
-    # Simulate different responses - In future, pull this data from DB for the next available set of images, run the model for animal type and count and update the JSON
-    value = choice(sequence)
-    print("Value : ", value)
-
-    if value == 9:
-        resp = response2
-    elif value == 4:
-        resp = response3
-    elif value == 6:
-        resp = response4
-    elif value == 7:
-        resp = response5
-    else:
-        resp = response
-
     config_db = "database.ini"
-    query = "SELECT * FROM public.event_images"
+    event_id = request.args.get('event_id', default=0, type=int)
+    print("even_id in GET: ", event_id)
+    # query = "SELECT * FROM public.event_images where image_group_id='SSWI000000019636502'" #Deer
+    if (event_id == 0):
+        event_id = random.randint(1, 26635)
+    else:
+        event_id = event_id + 1 + random.randint(1, 20)
+    # query = "SELECT * FROM public.event_images where image_group_id='SSWI000000017069780'"   #Elk    
+    query = "SELECT * FROM public.event_images where event_id=" + str(event_id)
     df = load_db_table(config_db, query)
     print("print from the DB query run: ", df)
+    conv_response = getDictFromDf(df)
+    print("json conversion: ", conv_response)
+    # conv_response = response5
+    # response_dict = json.loads(conv_response)
+    
 
-    return jsonify(resp)
+    return jsonify(conv_response)
+    # return jsonify(response_dict)
 
 # FE posts JSON in this format: {'imagegroupid' :333, 'animal' :bobcat, 'animalcount : 4}
-
-
 @app.route('/api/v1/resources/annotate', methods=['POST'])
 def annotate():
     request_data = request.get_json()

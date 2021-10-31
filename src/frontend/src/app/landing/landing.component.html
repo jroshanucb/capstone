@@ -20,9 +20,10 @@
     }
     
     .leftcontainer{
-        flex-basis: 85%;
+        flex-basis: 80%;
     }
     .rightcontainter{
+        flex-basis: 20%;
         display: flex;
         flex-direction: column;
         align-items: flex-start
@@ -61,19 +62,36 @@
         </div>
         <div class="rightcontainter">
             <!-- <div class="verticalradiogroup"> -->
-            <mat-radio-group class="verticalradiogroup" aria-labelledby="example-radio-group-label" [(ngModel)] = "animaltype">
-
-              <mat-radio-button class="example-radio-button" value="turkey"> Turkey </mat-radio-button>
-              <mat-radio-button class="example-radio-button" value="beaver">Beaver</mat-radio-button>
-              <mat-radio-button class="example-radio-button" value="fox">Fox</mat-radio-button>
-              <mat-radio-button class="example-radio-button" value="bear">Bear</mat-radio-button>
-              <mat-radio-button class="example-radio-button" value="bobcat">Bobcat</mat-radio-button>
-              <mat-radio-button class="example-radio-button" value="badger">Badger</mat-radio-button>
-              <mat-radio-button class="example-radio-button" value="cougar">Cougar</mat-radio-button>
-              <mat-radio-button class="example-radio-button" value="deer">Deer</mat-radio-button>
-              <mat-radio-button class="example-radio-button" value="elk">Elk</mat-radio-button>
-              <mat-radio-button class="example-radio-button" value="wolf">Wolf</mat-radio-button>
-            </mat-radio-group>
+            <!-- <mat-radio-group class="verticalradiogroup" aria-labelledby="example-radio-group-label" [(ngModel)] = "animaltype">
+              <mat-radio-button class="example-radio-button" value="Turkey"> Turkey </mat-radio-button>
+              <mat-radio-button class="example-radio-button" value="Cottontail">Cottontail</mat-radio-button>
+              <mat-radio-button class="example-radio-button" value="Fox, Gray">Fox Gray</mat-radio-button>
+              <mat-radio-button class="example-radio-button" value="Fox, Red">Fox Red</mat-radio-button>
+              <mat-radio-button class="example-radio-button" value="Bear">Bear</mat-radio-button>
+              <mat-radio-button class="example-radio-button" value="Coyote">Coyote</mat-radio-button>
+              <mat-radio-button class="example-radio-button" value="Opossum">Opossum</mat-radio-button>
+              <mat-radio-button class="example-radio-button" value="Raccoon">Raccoon</mat-radio-button>
+              <mat-radio-button class="example-radio-button" value="Snowshoe Hare">Snowshoe Hare</mat-radio-button>
+              <mat-radio-button class="example-radio-button" value="Deer">Deer</mat-radio-button>
+              <mat-radio-button class="example-radio-button" value="Elk">Elk</mat-radio-button>
+              <mat-radio-button class="example-radio-button" value="Wolf">Wolf</mat-radio-button>
+              <mat-radio-button class="example-radio-button" value="Other" checked=true>Other</mat-radio-button>
+            </mat-radio-group> -->
+            <mat-button-toggle-group fxLayout="row wrap" name="categories_1" [(ngModel)] = "animaltype">
+                <mat-button-toggle fxFlex="50%" value="Turkey" checked>Turkey</mat-button-toggle>
+                <mat-button-toggle fxFlex="50%" value="Cottontail" checked>Cottontail</mat-button-toggle>
+                <mat-button-toggle fxFlex="50%" value="Fox, Gray" checked>Fox Gray</mat-button-toggle>
+                <mat-button-toggle fxFlex="50%" value="Fox, Red" checked>Fox Red</mat-button-toggle>
+                <mat-button-toggle fxFlex="50%" value="Bear" checked>Bear</mat-button-toggle>
+                <mat-button-toggle fxFlex="50%" value="Coyote" checked>Coyote</mat-button-toggle>
+                <mat-button-toggle fxFlex="50%" value="Opossum" checked>Opossum</mat-button-toggle>
+                <mat-button-toggle fxFlex="50%" value="Raccoon" checked>Raccoon</mat-button-toggle>
+                <mat-button-toggle fxFlex="50%" value="Snowshoe Hare" checked>Snowshoe Hare</mat-button-toggle>
+                <mat-button-toggle fxFlex="50%" value="Deer" checked>Deer</mat-button-toggle>
+                <mat-button-toggle fxFlex="50%" value="Elk" checked>Elk</mat-button-toggle>
+                <mat-button-toggle fxFlex="50%" value="Wolf" checked>Wolf</mat-button-toggle>
+                <mat-button-toggle fxFlex="100%" value="Other" checked>Other</mat-button-toggle>
+            </mat-button-toggle-group>
             <!-- </div> -->
             <h4>Animal Count: {{animalcountslider.value}}</h4>
             <mat-slider #animalcountslider
@@ -87,5 +105,6 @@
             >
         </mat-slider>
         <button mat-raised-button (click)="submitdata()" color="primary">SUBMIT</button>
+        <button mat-raised-button (click)="submitskip()" color="primary">SKIP</button>
         </div>
     </div>
