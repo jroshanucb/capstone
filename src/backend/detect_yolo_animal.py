@@ -46,7 +46,7 @@ def modelLoad(
     model = attempt_load(weights, map_location=device)  # load FP32 model
     stride = int(model.stride.max())  # model stride
     imgsz = check_img_size(imgsz, s=stride)  # check image size
-    print('Image size is: ', imgsz, '; Stride: ', stride)
+    # print('Image size is: ', imgsz, '; Stride: ', stride)
 
 @torch.no_grad()
 def run(filename, # include path of the file
@@ -101,8 +101,8 @@ def run(filename, # include path of the file
             # get the predictions to return
             for *xyxy, conf, cls in reversed(det):
                 xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
-                ret_class += "class:" + str(cls.item()) + ";"
-                ret_class += "conf:" + str(conf.item()) + ";"
+                ret_class += "Class:" + str(cls.item()) + ","
+                ret_class += "Conf:" + str(conf.item()) + ";"
                 line = ','.join(map(str,xywh)) + ';'
                 ret_msg += str(line)
 
@@ -117,17 +117,18 @@ def process_images(
 
     count = 0
     for filename in os.listdir(source):
-        # filename = "SSWI000000006489319A.jpg"
+        # filename = "SSWI000000006489319A.jpg"    #1 elk 
+        # filename = "SSWI000000022151861A.jpg"    #2 bears
 
         # YOLO inference call
         ret_class, coords = run(filename, **vars(cmd_options))
 
-        model_output_msg = "Filename: {}; Class;Conf: {}; Bbox[list]: {}".format(filename, ret_class, coords)
-        print("Output of YOLO run: ", model_output_msg)
+        model_output_msg = "Filename: {}; {}; Bbox[list]: {}".format(filename, ret_class, coords)
+        print(model_output_msg)
         
         count = count + 1
-        if (count > 10):
-            break
+        # if (count > 10):
+        #     break
 
     return
 
