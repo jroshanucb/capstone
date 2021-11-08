@@ -34,6 +34,7 @@ cmd_options = None  # command options to be used in the MQTT message loop
 def modelLoad(
         weights='yolov5l_serengeti_swi_species_best.pt',  # model.pt path(s)
         source='test/images',  # not relevant with MQTT
+        dbwrite='false',
         imgsz=640,  # inference size (pixels)
         ):
 
@@ -52,6 +53,7 @@ def modelLoad(
 def run(filename, # include path of the file
         weights='yolov5l_serengeti_swi_species_best.pt',  # model.pt path(s)
         source='test/images',  # not relevant with MQTT
+        dbwrite='false',
         imgsz=640,  # inference size (pixels)
         ):
     global model
@@ -108,10 +110,27 @@ def run(filename, # include path of the file
 
     return ret_class, ret_msg
 
+def get_insert_stmt():
+    sql_stmt = "insert into public.model_output ("
+    sql_stmt += "model_ouput_id, model_id, image_group_id, "
+    sql_stmt += "image_id_1, image_id_1_species_name, image_id_1_count, image_id_1_blank, image_id_1_detectable, " 
+    sql_stmt += "image_id_2, image_id_2_species_name, image_id_2_count, image_id_2_blank, image_id_2_detectable, "
+    sql_stmt += "image_id_3, image_id_3_species_name, image_id_3_count, image_id_3_blank, image_id_3_detectable, "
+    sql_stmt += "load_date) values"
+
+sql_insert_stmt = get_insert_stmt()
+rows_values = 0
+sql_values_stmt = ""
+
+def insert_values_data(
+        values_str
+        ):
+    
 
 def process_images(
         weights='yolov5l_serengeti_swi_species_best.pt',  # model.pt path to the weights 
         source='test/images',  # path from where files have to be processed
+        dbwrite='false'
         ):
     global cmd_options
 
@@ -136,18 +155,15 @@ def parse_opt():
     parser = argparse.ArgumentParser()
     parser.add_argument('--source', type=str, default='test/images/', help='path to get images for inference')
     parser.add_argument('--weights', nargs='+', type=str, default='yolov5l_serengeti_swi_species_best.pt', help='best.pt path')
+    parser.add_argument('--dbwrite', type=str, default='false', help='db persistence enabler')
     opt = parser.parse_args()
     return opt
 
 def main(cmd_opts):
-    global local_mqttclient
-    global cmd_options
     cmd_options = cmd_opts
-    # Loop listener forever
     modelLoad(**vars(cmd_options))
     process_images(**vars(cmd_options))
 
 if __name__ == "__main__":
-    # update cmd_options global variable
     cmd_opts = parse_opt()
     main(cmd_opts)
