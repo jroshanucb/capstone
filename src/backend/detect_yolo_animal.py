@@ -1,7 +1,9 @@
 """Run inference with a YOLOv5 model on images
 
 Usage:
-    $ python3 path/to/detect_yolo_animal.py --source path/to/img.jpg --weights path/to/model.pt
+    $ python3 path/to/detect_yolo_animal.py --source path/to/img.jpg --weights path/to/model.pt --dbwrite='false' -modelid='3'
+    example:
+    python3 detect_yolo_animal.py --source "./../../data/test/yolo_splits3/test/images" --weights "../../../project/yolov5l_no_pretrain_swi_best.pt" --dbwrite='false' -modelid='3'
 
 Author:
     Javed Roshan
@@ -19,6 +21,10 @@ import torch.backends.cudnn as cudnn
 import numpy as np
 import os
 
+from db_conn import load_db_table
+from db_conn import config
+import pandas as pd
+import psycopg2
 
 FILE = Path(__file__).absolute()
 sys.path.append(FILE.parents[0].as_posix())  # add yolov5/ to path
@@ -26,15 +32,16 @@ sys.path.append(FILE.parents[0].as_posix())  # add yolov5/ to path
 from models.experimental import attempt_load
 from utils.augmentations import letterbox
 from utils.general import check_img_size, colorstr, non_max_suppression, scale_coords, xyxy2xywh, set_logging
-from utils.torch_utils import select_device, time_synchronized
+from utils.torch_utils import select_device, time_sync
 
 model = None        # trained model to be loaded once
-cmd_options = None  # command options to be used in the MQTT message loop
+cmd_options = None  # command options to be used during inference
 
 def modelLoad(
         weights='yolov5l_serengeti_swi_species_best.pt',  # model.pt path(s)
-        source='test/images',  # not relevant with MQTT
-        dbwrite='false',
+        source='test/images',  # folder to get the files from
+        modelid='3',  # 1 = YOLOv5 blank model; 3 = YOLOv5 species model
+        dbwrite='false', # flag that will write to DB
         imgsz=640,  # inference size (pixels)
         ):
 
@@ -53,6 +60,7 @@ def modelLoad(
 def run(filename, # include path of the file
         weights='yolov5l_serengeti_swi_species_best.pt',  # model.pt path(s)
         source='test/images',  # not relevant with MQTT
+        modelid='3',  # 1 = YOLOv5 blank model; 3 = YOLOv5 species model
         dbwrite='false',
         imgsz=640,  # inference size (pixels)
         ):
@@ -83,12 +91,12 @@ def run(filename, # include path of the file
         img = img.unsqueeze(0)
 
     # Inference
-    t1 = time_synchronized()
+    t1 = time_sync()
     pred = model(img, augment=False, visualize=False)[0]
 
     # Apply NMS
     pred = non_max_suppression(pred, 0.25, 0.45, None, False, max_det=1000)
-    t2 = time_synchronized()
+    t2 = time_sync()
 
     # Process detections
     ret_class = ''
@@ -110,44 +118,123 @@ def run(filename, # include path of the file
 
     return ret_class, ret_msg
 
+# Organize all files into a dictionary of events. This assumes filesnames have "eventId + fileId.jpg" structure
+def organize_events(
+        source='test/images/'
+    ):
+    # populate the dictionary to check which events have images
+    imagesDict = {}
+    count = 0
+    for filename in os.listdir(source):
+        image_name = filename.strip().split('.')[0]
+        eventId = image_name[:-1]
+        imageId = image_name[-1:]
+        count = count + 1
+        dict_eventId = imagesDict.get(eventId, "empty")
+        if (dict_eventId == "empty"):
+            imagesDict[eventId] = [imageId]
+        else:
+            imagesDict[eventId] = imagesDict[eventId] + [imageId]
+    return imagesDict
+
+
 def get_insert_stmt():
     sql_stmt = "insert into public.model_output ("
     sql_stmt += "model_ouput_id, model_id, image_group_id, "
     sql_stmt += "image_id_1, image_id_1_species_name, image_id_1_count, image_id_1_blank, image_id_1_detectable, " 
     sql_stmt += "image_id_2, image_id_2_species_name, image_id_2_count, image_id_2_blank, image_id_2_detectable, "
     sql_stmt += "image_id_3, image_id_3_species_name, image_id_3_count, image_id_3_blank, image_id_3_detectable, "
-    sql_stmt += "load_date) values"
+    sql_stmt += "load_date) values "
 
-sql_insert_stmt = get_insert_stmt()
-rows_values = 0
-sql_values_stmt = ""
+def get_speciesname_from_id(id):
+    speciesList = ['bear', 'cottontail_snowshoehare', 'coyote', 'deer', 'elk', 'foxgray_foxred', 'opossum', 'raccoon', 'turkey', 'wolf']
+    idx = int(id)
+    if idx > 9 or idx < 0:
+        speciesName = 'other'
+    else:
+        speciesName = speciesList[idx]
+    return speciesName
 
-def insert_values_data(
-        values_str
-        ):
-    
+def get_values_stmt(iteration, iter_size, modelid, model_output):
+    sql_values_stmt = ""
+
+    # {'SSWI000000017053464A.jpg': 
+    # 'A;Class:5.0,Conf:0.2643603980541229;Class:8.0,Conf:0.7807839512825012;
+    # 0.6778115630149841,0.630699098110199,0.054711245000362396,0.11854103207588196;
+    # 0.2796352505683899,0.6823708415031433,0.15197569131851196,0.11246200650930405;}
+    counter = 1
+    for key, value in model_output.items():
+        model_output_id = iteration * iter_size + counter
+        counter = counter + 1
+        image_group_id = key # this is the event_id
+        sql_values_stmt += "(" + str(model_output_id) + ", " + modelid + ", '" + image_group_id + "', "
+        for key2, value2 in value.items():
+            valueList = value2.strip().split(';') #should return id, ret_class, coords
+            sql_values_stmt += valueList[0] + ", '" + get_speciesname_from_id(valueList[1]) + "', "
+
+        load_date = "to_date('10-11-2021','DD-MM-YYYY')"
+        sql_values_stmt += load_date + "), "
+
+    return sql_values_stmt
+
+
+def db_flush(iteration, iter_size, modelid, model_output):
+    # model_output has the format of 
+    # model_output[image_group_id] = dict of fileInfer
+    # fileInfer has the format of 
+    # fileInfer[filename] = image_id, class (a number), coordinates (count from these numbers)
+
+    config_db = "database.ini"
+    params = config(config_db)
+    conn = psycopg2.connect(**params)
+
+    sql_insert_stmt = get_insert_stmt()
+    sql_values_stmt = get_values_stmt(iteration, iter_size, model_output)
+    sql_stmt = sql_insert_stmt + sql_values_stmt[:-2]
+    # print(sql_stmt)
+    cur = conn.cursor()
+    cur.execute(sql_stmt)
+    conn.commit()
+
+    return
 
 def process_images(
         weights='yolov5l_serengeti_swi_species_best.pt',  # model.pt path to the weights 
         source='test/images',  # path from where files have to be processed
-        dbwrite='false'
+        modelid='3',  # 1 = YOLOv5 blank model; 3 = YOLOv5 species model
+        dbwrite='false' # flag that will write to DB
         ):
     global cmd_options
 
-    count = 0
-    for filename in os.listdir(source):
-        # filename = "SSWI000000006489319A.jpg"    #1 elk 
-        # filename = "SSWI000000022151861A.jpg"    #2 bears
+    iteration = 0
+    # Organize events into a dictionary
+    imagesDict = organize_events(source)
 
-        # YOLO inference call
-        ret_class, coords = run(filename, **vars(cmd_options))
+    # for every event from the event list, perform yolo inference for all images from an event
+    model_output = {}
+    for key, value in imagesDict.items():
+    # for filename in os.listdir(source):
+        fileInfer = {}
+        for id in value:
+            # filename = "SSWI000000006489319A.jpg"    #1 elk 
+            # filename = "SSWI000000022151861A.jpg"    #2 bears
+            filename = key+id+".jpg"
 
-        model_output_msg = "Filename: {}; {}; Bbox[list]: {}".format(filename, ret_class, coords)
-        print(model_output_msg)
-        
-        count = count + 1
-        # if (count > 10):
-        #     break
+            # YOLO inference call
+            ret_class, coords = run(filename, **vars(cmd_options))
+
+            # "image_id_1, image_id_1_species_name, image_id_1_count, image_id_1_blank, image_id_1_detectable, "
+            fileInfer[filename] = "{};{}{}".format(id, ret_class, coords)
+            print(fileInfer)
+        model_output[key] = fileInfer
+
+        # db flush for every 25 events
+        if (dbwrite=='true' and count > 25):
+            db_flush(iteration, 25, modelid, model_output)
+            iteration = iteration + 1
+            model_output = []
+        elif count > 25:
+            model_output = []
 
     return
 
@@ -155,11 +242,13 @@ def parse_opt():
     parser = argparse.ArgumentParser()
     parser.add_argument('--source', type=str, default='test/images/', help='path to get images for inference')
     parser.add_argument('--weights', nargs='+', type=str, default='yolov5l_serengeti_swi_species_best.pt', help='best.pt path')
+    parser.add_argument('--modelid', type=str, default='3', help='1 = YOLOv5 blank model; 3 = YOLOv5 species model')
     parser.add_argument('--dbwrite', type=str, default='false', help='db persistence enabler')
     opt = parser.parse_args()
     return opt
 
 def main(cmd_opts):
+    global cmd_options
     cmd_options = cmd_opts
     modelLoad(**vars(cmd_options))
     process_images(**vars(cmd_options))
