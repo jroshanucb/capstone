@@ -212,6 +212,7 @@ def process_images(
 
     # for every event from the event list, perform yolo inference for all images from an event
     model_output = {}
+    count = 0
     for key, value in imagesDict.items():
     # for filename in os.listdir(source):
         fileInfer = {}
@@ -227,13 +228,14 @@ def process_images(
             fileInfer[filename] = "{};{}{}".format(id, ret_class, coords)
             print(fileInfer)
         model_output[key] = fileInfer
+        count += 1
 
-        # db flush for every 25 events
-        if (dbwrite=='true' and count > 25):
-            db_flush(iteration, 25, modelid, model_output)
+        # db flush for every 100 events
+        if (dbwrite=='true' and count > 100):
+            db_flush(iteration, 100, modelid, model_output)
             iteration = iteration + 1
             model_output = []
-        elif count > 25:
+        elif count > 100:
             model_output = []
 
     return
