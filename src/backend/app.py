@@ -92,6 +92,7 @@ def api_all():
         event_id = random.randint(1, 26635)
     else:
         event_id = event_id + 1 + random.randint(1, 20)
+        # event_id = event_id + 1
     # query = "SELECT * FROM public.event_images where image_group_id='SSWI000000017069780'"   #Elk    
     query = "SELECT * FROM public.event_images where event_id=" + str(event_id)
     df = load_db_table(config_db, query)
