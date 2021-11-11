@@ -129,7 +129,7 @@ def run(filename, # include path of the file
     t2 = time_sync()
 
     # Process detections
-    ret_class = ''
+    ret_preds = {} # predictions to be returned through this dictionary
     for i, det in enumerate(pred):  # detections per image
         p, s, im0 = path, '', im0s.copy()
 
@@ -141,12 +141,26 @@ def run(filename, # include path of the file
             # get the predictions to return
             for *xyxy, conf, cls in reversed(det):
                 xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
-                ret_class += "Class:" + str(cls.item()) + ","
-                ret_class += "Conf:" + str(conf.item()) + ";"
-                line = ','.join(map(str,xywh)) + ';'
-                ret_msg += str(line)
+                dict_class = ret_preds.get('Class', "empty")
+                pred_class = str(cls.item())
+                if (dict_class == "empty"):
+                    ret_preds['Class'] = [pred_class]
+                else:
+                    ret_preds['Class'] = ret_preds['Class'] + [pred_class]
+                dict_conf = ret_preds.get('Conf', "empty")
+                pred_conf = str(conf.item())
+                if (dict_conf == "empty"):
+                    ret_preds['Conf'] = [pred_conf]
+                else:
+                    ret_preds['Conf'] = ret_preds['Conf'] + [pred_conf]
+                dict_coords = ret_preds.get('Coords', "empty")
+                pred_coords = ','.join(map(str,xywh))
+                if (dict_coords == "empty"):
+                    ret_preds['Coords'] = [pred_coords]
+                else:
+                    ret_preds['Coords'] = ret_preds['Coords'] + [pred_coords]
 
-    return ret_class, ret_msg, dict_preds
+    return ret_preds, dict_preds
 
 # Organize all files into a dictionary of events. This assumes filesnames have "eventId + fileId.jpg" structure
 def organize_events(
@@ -255,12 +269,12 @@ def process_images(
             filename = key+id+".jpg"
 
             # YOLO inference call
-            ret_class, coords, dict_preds = run(filename, **vars(cmd_options))
+            ret_preds, dict_preds = run(filename, **vars(cmd_options))
 
             # "image_id_1, image_id_1_species_name, image_id_1_count, image_id_1_blank, image_id_1_detectable, "
-            fileInfer[filename] = "{};{}{}".format(id, ret_class, coords)
-            print(fileInfer)
+            fileInfer[filename] = [ret_preds, dict_preds]
         model_output[key] = fileInfer
+        print(fileInfer)
         count += 1
 
         # db flush for every 100 events
