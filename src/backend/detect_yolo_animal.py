@@ -185,9 +185,9 @@ def organize_events(
 def get_insert_stmt():
     sql_stmt = "insert into public.model_output ("
     sql_stmt += "model_ouput_id, model_id, image_group_id, "
-    sql_stmt += "image_id_1, image_id_1_species_name, image_id_1_count, image_id_1_blank, image_id_1_detectable, " 
-    sql_stmt += "image_id_2, image_id_2_species_name, image_id_2_count, image_id_2_blank, image_id_2_detectable, "
-    sql_stmt += "image_id_3, image_id_3_species_name, image_id_3_count, image_id_3_blank, image_id_3_detectable, "
+    sql_stmt += "image_id_1, image_id_1_species_name, image_id_1_conf, image_id_1_count, image_id_1_blank, image_id_1_detectable, " 
+    sql_stmt += "image_id_2, image_id_2_species_name, image_id_2_conf, image_id_2_count, image_id_2_blank, image_id_2_detectable, "
+    sql_stmt += "image_id_3, image_id_3_species_name, image_id_3_conf, image_id_3_count, image_id_3_blank, image_id_3_detectable, "
     sql_stmt += "load_date) values "
 
 def get_speciesname_from_id(id):
@@ -202,10 +202,23 @@ def get_speciesname_from_id(id):
 def get_values_stmt(iteration, iter_size, modelid, model_output):
     sql_values_stmt = ""
 
-    # {'SSWI000000017053464A.jpg': 
-    # 'A;Class:5.0,Conf:0.2643603980541229;Class:8.0,Conf:0.7807839512825012;
-    # 0.6778115630149841,0.630699098110199,0.054711245000362396,0.11854103207588196;
-    # 0.2796352505683899,0.6823708415031433,0.15197569131851196,0.11246200650930405;}
+    # Example model_output[key] = 
+    # {'SSWI000000020365431C.jpg': [{'Class': ['8.0', '8.0'], 
+    #                                'Conf': ['0.7531381249427795', '0.8462810516357422'], 
+    #                                'Coords': ['0.9179331064224243,0.7872340679168701,0.12158054858446121,0.09118541330099106', '0.38145896792411804,0.9088146090507507,0.2705167233943939,0.18237082660198212']
+    #                               }, {}
+    #                              ], 
+    #  'SSWI000000020365431B.jpg': [{'Class': ['8.0', '8.0'], 
+    #                                'Conf': ['0.7363986968994141', '0.7579455971717834'], 
+    #                                'Coords': ['0.34802430868148804,0.9103343486785889,0.22796352207660675,0.17933130264282227', '0.8875380158424377,0.7857142686843872,0.13981762528419495,0.09422492235898972']
+    #                               }, {}
+    #                              ], 
+    #  'SSWI000000020365431A.jpg': [{'Class': ['8.0', '8.0', '5.0'], 
+    #                                'Conf': ['0.337464839220047', '0.41901835799217224', '0.4265201687812805'], 
+    #                                'Coords': ['0.7644376754760742,0.7963525652885437,0.12462005764245987,0.08510638028383255', '0.1322188377380371,0.9194529056549072,0.2644376754760742,0.16109421849250793', '0.1322188377380371,0.9179331064224243,0.2583586573600769,0.16413374245166779']
+    #                               }, {}
+    #                              ]
+    # }
     counter = 1
     for key, value in model_output.items():
         model_output_id = iteration * iter_size + counter
@@ -213,8 +226,14 @@ def get_values_stmt(iteration, iter_size, modelid, model_output):
         image_group_id = key # this is the event_id
         sql_values_stmt += "(" + str(model_output_id) + ", " + modelid + ", '" + image_group_id + "', "
         for key2, value2 in value.items():
-            valueList = value2.strip().split(';') #should return id, ret_class, coords
-            sql_values_stmt += valueList[0] + ", '" + get_speciesname_from_id(valueList[1]) + "', "
+            dict1, dict2 = value2
+            # ignore value2 for now
+            image_id = key2[-5:][0] # get 'C' from this file name 'SSWI000000020365431C.jpg'
+            image_id_species_name = [get_speciesname_from_id(int(float(sn))) for sn in dict1['Class']]
+            image_id_conf = [cf for cf in dict1['Conf']]
+            image_id_count = len(dict1['Coords'])
+            sql_values_stmt +=  "' " + image_id + "', '" + str(image_id_species_name) + "', '" + str(image_id_conf) + "', " + str(image_id_count)
+            sql_values_stmt +=  ", false, false"
 
         load_date = "to_date('10-11-2021','DD-MM-YYYY')"
         sql_values_stmt += load_date + "), "
@@ -233,7 +252,7 @@ def db_flush(iteration, iter_size, modelid, model_output):
     conn = psycopg2.connect(**params)
 
     sql_insert_stmt = get_insert_stmt()
-    sql_values_stmt = get_values_stmt(iteration, iter_size, model_output)
+    sql_values_stmt = get_values_stmt(iteration, iter_size, modelid, model_output)
     sql_stmt = sql_insert_stmt + sql_values_stmt[:-2]
     # print(sql_stmt)
     cur = conn.cursor()
