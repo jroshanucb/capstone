@@ -43,6 +43,8 @@ def modelLoad(
         source='test/images',  # folder to get the files from
         modelid='3',  # 1 = YOLOv5 blank model; 3 = YOLOv5 species model
         dbwrite='false', # flag that will write to DB
+        conf_thres=0.25, # default=0.25
+        iou_thres=0.45, # default=0.45
         imgsz=352,  # inference size (pixels)
         ):
 
@@ -63,6 +65,8 @@ def run(filename, # include path of the file
         source='test/images',  # not relevant with MQTT
         modelid='3',  # 1 = YOLOv5 blank model; 3 = YOLOv5 species model
         dbwrite='false',
+        conf_thres=0.25, # default=0.25
+        iou_thres=0.45, # default=0.45
         imgsz=352,  # inference size (pixels)
         ):
     global model
@@ -120,7 +124,8 @@ def run(filename, # include path of the file
     # print(dict_preds)
 
     # Apply NMS
-    pred = non_max_suppression(pred, 0.25, 0.45, None, False, max_det=1000)
+    # pred = non_max_suppression(pred, 0.25, 0.45, None, False, max_det=1000)
+    pred = non_max_suppression(pred, conf_thres, iou_thres, None, False, max_det=1000)
     t2 = time_sync()
 
     # Process detections
@@ -228,6 +233,8 @@ def process_images(
         source='test/images',  # path from where files have to be processed
         modelid='3',  # 1 = YOLOv5 blank model; 3 = YOLOv5 species model
         dbwrite='false', # flag that will write to DB
+        conf_thres=0.25, # default=0.25
+        iou_thres=0.45, # default=0.45
         imgsz=352
         ):
     global cmd_options
@@ -273,6 +280,8 @@ def parse_opt():
     parser.add_argument('--modelid', type=str, default='3', help='1 = YOLOv5 blank model; 3 = YOLOv5 species model')
     parser.add_argument('--dbwrite', type=str, default='false', help='db persistence enabler')
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[352], help='inference size h,w')
+    parser.add_argument('--conf_thres', type=float, default=0.25, help='confidence threshold')
+    parser.add_argument('--iou_thres', type=float, default=0.45, help='NMS IoU threshold')
     opt = parser.parse_args()
     return opt
 
