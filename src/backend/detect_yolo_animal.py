@@ -17,6 +17,7 @@ from pathlib import Path
 
 import cv2
 import torch
+import torch.nn as nn
 import torch.backends.cudnn as cudnn
 import numpy as np
 import os
@@ -38,11 +39,11 @@ model = None        # trained model to be loaded once
 cmd_options = None  # command options to be used during inference
 
 def modelLoad(
-        weights='yolov5l_serengeti_swi_species_best.pt',  # model.pt path(s)
+        weights='yolov5l_no_pretrain_swi_best.pt',  # model.pt path(s)
         source='test/images',  # folder to get the files from
         modelid='3',  # 1 = YOLOv5 blank model; 3 = YOLOv5 species model
         dbwrite='false', # flag that will write to DB
-        imgsz=640,  # inference size (pixels)
+        imgsz=352,  # inference size (pixels)
         ):
 
     global model
@@ -58,11 +59,11 @@ def modelLoad(
 
 @torch.no_grad()
 def run(filename, # include path of the file
-        weights='yolov5l_serengeti_swi_species_best.pt',  # model.pt path(s)
+        weights='yolov5l_no_pretrain_swi_best.pt',  # model.pt path(s)
         source='test/images',  # not relevant with MQTT
         modelid='3',  # 1 = YOLOv5 blank model; 3 = YOLOv5 species model
         dbwrite='false',
-        imgsz=640,  # inference size (pixels)
+        imgsz=352,  # inference size (pixels)
         ):
     global model
     ret_msg = ''
@@ -77,10 +78,10 @@ def run(filename, # include path of the file
     stride = int(model.stride.max())  # model stride
 
     # # Padded resize
-    img = letterbox(img0, imgsz, stride=stride)[0]
+    img = letterbox(img0, imgsz[0], stride=stride)[0]
 
-    # Convert
-    img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
+    # Convert BGR to RGB
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB).transpose(2, 0, 1)
     img = np.ascontiguousarray(img)
 
     t0 = time.time()
@@ -91,8 +92,32 @@ def run(filename, # include path of the file
         img = img.unsqueeze(0)
 
     # Inference
-    t1 = time_sync()
     pred = model(img, augment=False, visualize=False)[0]
+
+    # print("{}, {}".format(type(pred), pred.shape))
+
+    # top5 predictions using Softmax
+    sm = nn.Softmax(dim=1)
+    probabilities = sm(pred)
+
+    _ , i = torch.topk(pred, 5)
+    prob, _ = probabilities.topk(5)
+    
+    # for _ in range(1):
+    #     print(i.shape)
+
+    dict_preds = {}
+    itr = 0
+    print(i.cpu().numpy()[-1].shape)
+    # for x in i.cpu().numpy()[-1]:
+
+    #     if x in dict_preds:
+    #         dict_preds[int(x)].append(float(i.cpu().detach().numpy()[0][itr]))
+    #     else:
+    #         dict_preds[int(x)] = [float(i.cpu().detach().numpy()[0][itr])]
+    #     itr += 1
+        
+    # print(dict_preds)
 
     # Apply NMS
     pred = non_max_suppression(pred, 0.25, 0.45, None, False, max_det=1000)
@@ -116,7 +141,7 @@ def run(filename, # include path of the file
                 line = ','.join(map(str,xywh)) + ';'
                 ret_msg += str(line)
 
-    return ret_class, ret_msg
+    return ret_class, ret_msg, dict_preds
 
 # Organize all files into a dictionary of events. This assumes filesnames have "eventId + fileId.jpg" structure
 def organize_events(
@@ -202,7 +227,8 @@ def process_images(
         weights='yolov5l_serengeti_swi_species_best.pt',  # model.pt path to the weights 
         source='test/images',  # path from where files have to be processed
         modelid='3',  # 1 = YOLOv5 blank model; 3 = YOLOv5 species model
-        dbwrite='false' # flag that will write to DB
+        dbwrite='false', # flag that will write to DB
+        imgsz=352
         ):
     global cmd_options
 
@@ -222,7 +248,7 @@ def process_images(
             filename = key+id+".jpg"
 
             # YOLO inference call
-            ret_class, coords = run(filename, **vars(cmd_options))
+            ret_class, coords, dict_preds = run(filename, **vars(cmd_options))
 
             # "image_id_1, image_id_1_species_name, image_id_1_count, image_id_1_blank, image_id_1_detectable, "
             fileInfer[filename] = "{};{}{}".format(id, ret_class, coords)
@@ -243,9 +269,10 @@ def process_images(
 def parse_opt():
     parser = argparse.ArgumentParser()
     parser.add_argument('--source', type=str, default='test/images/', help='path to get images for inference')
-    parser.add_argument('--weights', nargs='+', type=str, default='yolov5l_serengeti_swi_species_best.pt', help='best.pt path')
+    parser.add_argument('--weights', nargs='+', type=str, default='yolov5l_no_pretrain_swi_best.pt', help='best.pt path')
     parser.add_argument('--modelid', type=str, default='3', help='1 = YOLOv5 blank model; 3 = YOLOv5 species model')
     parser.add_argument('--dbwrite', type=str, default='false', help='db persistence enabler')
+    parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[352], help='inference size h,w')
     opt = parser.parse_args()
     return opt
 
@@ -257,4 +284,5 @@ def main(cmd_opts):
 
 if __name__ == "__main__":
     cmd_opts = parse_opt()
+    # print(cmd_opts)
     main(cmd_opts)
