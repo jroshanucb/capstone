@@ -85,7 +85,8 @@ def run(filename, # include path of the file
     img = letterbox(img0, imgsz[0], stride=stride)[0]
 
     # Convert BGR to RGB
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB).transpose(2, 0, 1)
+    # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB).transpose(2, 0, 1)
+    img = img[:, :, ::-1].transpose(2, 0, 1) # BGR to RGB
     img = np.ascontiguousarray(img)
 
     t0 = time.time()
@@ -96,32 +97,8 @@ def run(filename, # include path of the file
         img = img.unsqueeze(0)
 
     # Inference
+    t1 = time_sync()
     pred = model(img, augment=False, visualize=False)[0]
-
-    # print("{}, {}".format(type(pred), pred.shape))
-
-    # top5 predictions using Softmax
-    sm = nn.Softmax(dim=1)
-    probabilities = sm(pred)
-
-    _ , i = torch.topk(pred, 5)
-    prob, _ = probabilities.topk(5)
-    
-    # for _ in range(1):
-    #     print(i.shape)
-
-    dict_preds = {}
-    itr = 0
-    print(i.cpu().numpy()[-1].shape)
-    # for x in i.cpu().numpy()[-1]:
-
-    #     if x in dict_preds:
-    #         dict_preds[int(x)].append(float(i.cpu().detach().numpy()[0][itr]))
-    #     else:
-    #         dict_preds[int(x)] = [float(i.cpu().detach().numpy()[0][itr])]
-    #     itr += 1
-        
-    # print(dict_preds)
 
     # Apply NMS
     # pred = non_max_suppression(pred, 0.25, 0.45, None, False, max_det=1000)
@@ -160,7 +137,7 @@ def run(filename, # include path of the file
                 else:
                     ret_preds['Coords'] = ret_preds['Coords'] + [pred_coords]
 
-    return ret_preds, dict_preds
+    return ret_preds
 
 # Organize all files into a dictionary of events. This assumes filesnames have "eventId + fileId.jpg" structure
 def organize_events(
@@ -189,6 +166,7 @@ def get_insert_stmt():
     sql_stmt += "image_id_2, image_id_2_species_name, image_id_2_conf, image_id_2_count, image_id_2_blank, image_id_2_detectable, "
     sql_stmt += "image_id_3, image_id_3_species_name, image_id_3_conf, image_id_3_count, image_id_3_blank, image_id_3_detectable, "
     sql_stmt += "load_date) values "
+    return sql_stmt
 
 def get_speciesname_from_id(id):
     speciesList = ['bear', 'cottontail_snowshoehare', 'coyote', 'deer', 'elk', 'foxgray_foxred', 'opossum', 'raccoon', 'turkey', 'wolf']
@@ -203,21 +181,18 @@ def get_values_stmt(iteration, iter_size, modelid, model_output):
     sql_values_stmt = ""
 
     # Example model_output[key] = 
-    # {'SSWI000000020365431C.jpg': [{'Class': ['8.0', '8.0'], 
+    # {'SSWI000000020365431C.jpg': {'Class': ['8.0', '8.0'], 
     #                                'Conf': ['0.7531381249427795', '0.8462810516357422'], 
     #                                'Coords': ['0.9179331064224243,0.7872340679168701,0.12158054858446121,0.09118541330099106', '0.38145896792411804,0.9088146090507507,0.2705167233943939,0.18237082660198212']
-    #                               }, {}
-    #                              ], 
-    #  'SSWI000000020365431B.jpg': [{'Class': ['8.0', '8.0'], 
+    #                               }, 
+    #  'SSWI000000020365431B.jpg': {'Class': ['8.0', '8.0'], 
     #                                'Conf': ['0.7363986968994141', '0.7579455971717834'], 
     #                                'Coords': ['0.34802430868148804,0.9103343486785889,0.22796352207660675,0.17933130264282227', '0.8875380158424377,0.7857142686843872,0.13981762528419495,0.09422492235898972']
-    #                               }, {}
-    #                              ], 
-    #  'SSWI000000020365431A.jpg': [{'Class': ['8.0', '8.0', '5.0'], 
+    #                               },
+    #  'SSWI000000020365431A.jpg': {'Class': ['8.0', '8.0', '5.0'], 
     #                                'Conf': ['0.337464839220047', '0.41901835799217224', '0.4265201687812805'], 
     #                                'Coords': ['0.7644376754760742,0.7963525652885437,0.12462005764245987,0.08510638028383255', '0.1322188377380371,0.9194529056549072,0.2644376754760742,0.16109421849250793', '0.1322188377380371,0.9179331064224243,0.2583586573600769,0.16413374245166779']
-    #                               }, {}
-    #                              ]
+    #                               }
     # }
     counter = 1
     for key, value in model_output.items():
@@ -226,35 +201,43 @@ def get_values_stmt(iteration, iter_size, modelid, model_output):
         image_group_id = key # this is the event_id
         sql_values_stmt += "(" + str(model_output_id) + ", " + modelid + ", '" + image_group_id + "', "
         for key2, value2 in value.items():
-            dict1, dict2 = value2
-            # ignore value2 for now
+            dict1 = value2
             image_id = key2[-5:][0] # get 'C' from this file name 'SSWI000000020365431C.jpg'
-            image_id_species_name = [get_speciesname_from_id(int(float(sn))) for sn in dict1['Class']]
-            image_id_conf = [cf for cf in dict1['Conf']]
-            image_id_count = len(dict1['Coords'])
-            sql_values_stmt +=  "' " + image_id + "', '" + str(image_id_species_name) + "', '" + str(image_id_conf) + "', " + str(image_id_count)
-            sql_values_stmt +=  ", false, false"
+            if (len(dict1.keys()) > 0): # for images where no species exist, the dict will be empty
+                # ignore value2 for now
+                # image_id_species_name = [get_speciesname_from_id(int(float(sn))) for sn in dict1['Class']]
+                image_id_species_name = ','.join([get_speciesname_from_id(int(float(sn))) for sn in dict1['Class']])
+                image_id_conf = ','.join([cf for cf in dict1['Conf']])
+                image_id_count = len(dict1['Coords'])
+                sql_values_stmt +=  "'" + image_id + "', '" + str(image_id_species_name) + "', '" + str(image_id_conf) + "', " + str(image_id_count)
+                sql_values_stmt +=  ", false, false, "
+            else:
+                # empty image with no predictions
+                sql_values_stmt +=  "'" + image_id + "', '', '', 0"
+                sql_values_stmt +=  ", true, false, "
 
         load_date = "to_date('10-11-2021','DD-MM-YYYY')"
         sql_values_stmt += load_date + "), "
 
     return sql_values_stmt
 
+def db_init():
+    config_db = "database.ini"
+    params = config(config_db)
+    conn = psycopg2.connect(**params)
 
-def db_flush(iteration, iter_size, modelid, model_output):
+    return conn
+
+def db_flush(iteration, iter_size, modelid, conn, model_output):
     # model_output has the format of 
     # model_output[image_group_id] = dict of fileInfer
     # fileInfer has the format of 
     # fileInfer[filename] = image_id, class (a number), coordinates (count from these numbers)
 
-    config_db = "database.ini"
-    params = config(config_db)
-    conn = psycopg2.connect(**params)
-
     sql_insert_stmt = get_insert_stmt()
     sql_values_stmt = get_values_stmt(iteration, iter_size, modelid, model_output)
     sql_stmt = sql_insert_stmt + sql_values_stmt[:-2]
-    # print(sql_stmt)
+    print("sql statment ---->", sql_stmt)
     cur = conn.cursor()
     cur.execute(sql_stmt)
     conn.commit()
@@ -275,12 +258,12 @@ def process_images(
     iteration = 0
     # Organize events into a dictionary
     imagesDict = organize_events(source)
+    conn = db_init()
 
     # for every event from the event list, perform yolo inference for all images from an event
     model_output = {}
     count = 0
     for key, value in imagesDict.items():
-    # for filename in os.listdir(source):
         fileInfer = {}
         for id in value:
             # filename = "SSWI000000006489319A.jpg"    #1 elk 
@@ -288,21 +271,23 @@ def process_images(
             filename = key+id+".jpg"
 
             # YOLO inference call
-            ret_preds, dict_preds = run(filename, **vars(cmd_options))
+            ret_preds= run(filename, **vars(cmd_options))
 
             # "image_id_1, image_id_1_species_name, image_id_1_count, image_id_1_blank, image_id_1_detectable, "
-            fileInfer[filename] = [ret_preds, dict_preds]
+            fileInfer[filename] = ret_preds
         model_output[key] = fileInfer
         print(fileInfer)
         count += 1
 
-        # db flush for every 100 events
-        if (dbwrite=='true' and count > 100):
-            db_flush(iteration, 100, modelid, model_output)
+        # db flush for every 50 events
+        if (dbwrite=='true' and count > 50):
+            db_flush(iteration, 50, modelid, conn, model_output)
             iteration = iteration + 1
-            model_output = []
-        elif count > 100:
-            model_output = []
+            model_output = {}
+            count = 0
+        elif count > 50:
+            model_output = {}
+            count = 0
 
     return
 
