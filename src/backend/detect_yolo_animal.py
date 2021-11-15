@@ -223,6 +223,7 @@ def get_values_stmt(iteration, iter_size, modelid, model_output):
 
         if (found):
             sql_values_stmt += "'', '', '', 0, false, false, "
+            found = False
         load_date = "to_date('10-11-2021','DD-MM-YYYY')"
         sql_values_stmt += load_date + "), "
 
