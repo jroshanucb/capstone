@@ -163,9 +163,9 @@ def organize_events(
 def get_insert_stmt():
     sql_stmt = "insert into public.model_output ("
     sql_stmt += "model_output_id, model_id, image_group_id, "
-    sql_stmt += "image_id_1, image_id_1_species_name, image_id_1_conf, image_id_1_count, image_id_1_blank, image_id_1_detectable, " 
-    sql_stmt += "image_id_2, image_id_2_species_name, image_id_2_conf, image_id_2_count, image_id_2_blank, image_id_2_detectable, "
-    sql_stmt += "image_id_3, image_id_3_species_name, image_id_3_conf, image_id_3_count, image_id_3_blank, image_id_3_detectable, "
+    sql_stmt += "image_id_1, image_id_1_species_name, image_id_1_conf, image_id_1_count, image_id_1_blank, image_id_1_detectable, image_id_1_bbox, " 
+    sql_stmt += "image_id_2, image_id_2_species_name, image_id_2_conf, image_id_2_count, image_id_2_blank, image_id_2_detectable, image_id_2_bbox, "
+    sql_stmt += "image_id_3, image_id_3_species_name, image_id_3_conf, image_id_3_count, image_id_3_blank, image_id_3_detectable, image_id_3_bbox, "
     sql_stmt += "load_date) values "
     return sql_stmt
 
@@ -216,14 +216,18 @@ def get_values_stmt(iteration, iter_size, modelid, model_output):
                 image_id_conf = ','.join([cf for cf in dict1['Conf']])
                 image_id_count = len(dict1['Coords'])
                 sql_values_stmt +=  "'" + image_id + "', '" + str(image_id_species_name) + "', '" + str(image_id_conf) + "', " + str(image_id_count)
-                sql_values_stmt +=  ", false, false, "
+                sql_values_stmt +=  ", false, false, '"
+                coords_list = ""
+                for coords in dict1['Coords']:
+                    coords_list += coords + ";"
+                sql_values_stmt += coords_list[:-1] + "', "
             else:
                 # empty image with no predictions
                 sql_values_stmt +=  "'" + image_id + "', '', '', 0"
-                sql_values_stmt +=  ", true, false, "
+                sql_values_stmt +=  ", true, false, '', "
 
         if (found):
-            sql_values_stmt += "'', '', '', 0, false, false, "
+            sql_values_stmt += "'', '', '', 0, false, false, '', "
             found = False
         load_date = "to_date('10-11-2021','DD-MM-YYYY')"
         sql_values_stmt += load_date + "), "
