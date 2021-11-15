@@ -199,7 +199,8 @@ def get_values_stmt(iteration, iter_size, modelid, model_output):
     counter = 1
     model_num = int(modelid)
     for key, value in model_output.items():
-        model_output_id = (model_num-1) * 3611 + iteration * iter_size + counter
+        # 3611 / 3 = 1204 events total; add some buffer between model outputs i.e., 1250 events
+        model_output_id = (model_num-1) * 1250 + iteration * iter_size + counter
         counter = counter + 1
         image_group_id = key # this is the event_id
         if (key == 'SSWI000000019326807'):
@@ -296,6 +297,9 @@ def process_images(
         elif count > 50:
             model_output = {}
             count = 1
+
+    # final flush
+    db_flush(iteration, 50, modelid, conn, model_output)
 
     return
 
