@@ -16,11 +16,6 @@ from os.path import isfile, join
 
 #Read lines from txt results file
 
-top_path = 'phase 1-blank/'
-yolo_file = 'phase1_yolo.txt'
-
-effnet_file = 'phase1_efficientnetb0_classifications.json'
-
 #HELPER FUNCTIONS
 
 def images_to_events(image_df, image_id_col = 'id'):
@@ -61,7 +56,7 @@ def yolo_blank_read_file(top_path, yolo_file):
 
     #Create necessary columns
     yolo_stage_1_prediction_df['event_id'] = images_to_events(yolo_stage_1_prediction_df)
-    yolo_stage_1_prediction_df['class_name'] = yolo_stage_1_prediction_df['prediction'].apply(lambda x: 'empty' if x == '' else 'animal')
+    yolo_stage_1_prediction_df['class_name'] = yolo_stage_1_prediction_df['image_prediction'].apply(lambda x: 'empty' if x == '' else 'animal')
     yolo_stage_1_prediction_df['class'] = yolo_stage_1_prediction_df['class_name'].apply(lambda x: 0 if x == 'animal' else 1)
 
     yolo_stage_1_prediction_grouped = group_events(yolo_stage_1_prediction_df)
@@ -77,7 +72,7 @@ def effnet_blank_read_file(top_path, yolo_file):
     effnet_stage_1 = pd.read_json(top_path + yolo_file)
     effnet_stage_1 = effnet_stage_1['phase1_classification_results'].apply(pd.Series)
 
-    effnet_stage_1['event_id'] = images_to_events(image_df)
+    effnet_stage_1['event_id'] = images_to_events(effnet_stage_1)
 
     effnet_stage_1_grouped = group_events(effnet_stage_1)
 
@@ -86,3 +81,10 @@ def effnet_blank_read_file(top_path, yolo_file):
 
 
     return effnet_stage_1_grouped
+
+top_path = '/Users/sleung2/Documents/MIDS Program/capstone/ensemble/phase 1-blank/'
+yolo_file = 'phase1_yolo.txt'
+effnet_file = 'phase1_efficientnetb0_classifications.json'
+
+yolo_stage_1_prediction_grouped = yolo_blank_read_file(top_path, yolo_file)
+effnet_stage_1_grouped = effnet_blank_read_file(top_path, effnet_file)
