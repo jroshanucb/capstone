@@ -69,10 +69,10 @@ def yolo_blank_read_file(top_path, yolo_file):
     return yolo_stage_1_prediction_grouped
 
 ## Efficientnet
-def effnet_blank_read_file(top_path, yolo_file):
+def effnet_blank_read_file(top_path, effnet_file):
     '''Convert Effnet json file to predictions df by event'''
 
-    effnet_stage_1 = pd.read_json(top_path + yolo_file)
+    effnet_stage_1 = pd.read_json(top_path + effnet_file)
     effnet_stage_1 = effnet_stage_1['phase1_classification_results'].apply(pd.Series)
 
     effnet_stage_1['event_id'] = images_to_events(effnet_stage_1)
