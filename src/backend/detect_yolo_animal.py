@@ -156,12 +156,13 @@ def organize_events(
             imagesDict[eventId] = [imageId]
         else:
             imagesDict[eventId] = imagesDict[eventId] + [imageId]
+    
     return imagesDict
 
 
 def get_insert_stmt():
     sql_stmt = "insert into public.model_output ("
-    sql_stmt += "model_ouput_id, model_id, image_group_id, "
+    sql_stmt += "model_output_id, model_id, image_group_id, "
     sql_stmt += "image_id_1, image_id_1_species_name, image_id_1_conf, image_id_1_count, image_id_1_blank, image_id_1_detectable, " 
     sql_stmt += "image_id_2, image_id_2_species_name, image_id_2_conf, image_id_2_count, image_id_2_blank, image_id_2_detectable, "
     sql_stmt += "image_id_3, image_id_3_species_name, image_id_3_conf, image_id_3_count, image_id_3_blank, image_id_3_detectable, "
@@ -194,12 +195,15 @@ def get_values_stmt(iteration, iter_size, modelid, model_output):
     #                                'Coords': ['0.7644376754760742,0.7963525652885437,0.12462005764245987,0.08510638028383255', '0.1322188377380371,0.9194529056549072,0.2644376754760742,0.16109421849250793', '0.1322188377380371,0.9179331064224243,0.2583586573600769,0.16413374245166779']
     #                               }
     # }
+    found = False
     counter = 1
     model_num = int(modelid)
     for key, value in model_output.items():
-        model_output_id = model_num * iteration * iter_size + counter
+        model_output_id = (model_num-1) * 3611 + iteration * iter_size + counter
         counter = counter + 1
         image_group_id = key # this is the event_id
+        if (key == 'SSWI000000019326807'):
+            found = True
         sql_values_stmt += "(" + str(model_output_id) + ", " + modelid + ", '" + image_group_id + "', "
         for key2, value2 in value.items():
             dict1 = value2
@@ -217,6 +221,8 @@ def get_values_stmt(iteration, iter_size, modelid, model_output):
                 sql_values_stmt +=  "'" + image_id + "', '', '', 0"
                 sql_values_stmt +=  ", true, false, "
 
+        if (found):
+            sql_values_stmt += "'', '', '', 0, false, false, "
         load_date = "to_date('10-11-2021','DD-MM-YYYY')"
         sql_values_stmt += load_date + "), "
 
@@ -263,7 +269,7 @@ def process_images(
 
     # for every event from the event list, perform yolo inference for all images from an event
     model_output = {}
-    count = 0
+    count = 1
     for key, value in imagesDict.items():
         fileInfer = {}
         for id in value:
@@ -285,10 +291,10 @@ def process_images(
             db_flush(iteration, 50, modelid, conn, model_output)
             iteration = iteration + 1
             model_output = {}
-            count = 0
+            count = 1
         elif count > 50:
             model_output = {}
-            count = 0
+            count = 1
 
     return
 
