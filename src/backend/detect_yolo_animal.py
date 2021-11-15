@@ -3,7 +3,7 @@
 Usage:
     $ python3 path/to/detect_yolo_animal.py --source path/to/img.jpg --weights path/to/model.pt --dbwrite='false' -modelid='3'
     example:
-    python3 detect_yolo_animal.py --source "./../../data/test/yolo_splits3/test/images" --weights "../../../project/yolov5l_no_pretrain_swi_best.pt" --dbwrite='false' -modelid='3'
+    python3 detect_yolo_animal.py --source "../../../data/test/yolo_splits3/test/images" --weights "../../../project/yolov5l_no_pretrain_swi_best.pt" --dbwrite='true' --modelid='3'
 
 Author:
     Javed Roshan
@@ -195,8 +195,9 @@ def get_values_stmt(iteration, iter_size, modelid, model_output):
     #                               }
     # }
     counter = 1
+    model_num = int(modelid)
     for key, value in model_output.items():
-        model_output_id = iteration * iter_size + counter
+        model_output_id = model_num * iteration * iter_size + counter
         counter = counter + 1
         image_group_id = key # this is the event_id
         sql_values_stmt += "(" + str(model_output_id) + ", " + modelid + ", '" + image_group_id + "', "
