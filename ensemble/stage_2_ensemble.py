@@ -19,6 +19,7 @@ from os.path import isfile, join
 # Events with multiple images of same class- we will take the max of the majority class
 # Events with all different labels will get labelled with the count of highest conf score label
 
+# Labels to codes
 labels = pd.DataFrame(['foxgray_foxred',
               'cottontail_snowshoehare',
               'raccoon',
@@ -32,36 +33,21 @@ labels = pd.DataFrame(['foxgray_foxred',
 labels = labels.rename(columns = {0: 'species'})
 labels.insert(0, 'class', range(0, len(labels)))
 
+#Directories and yolo multiplier
+top_path = '/Users/sleung2/Documents/MIDS Program/capstone/ensemble/phase 2-species/'
+yolo_file = 'output_no_wolf.txt'
+effnet_file = 'phase2_efficientnetb5_classifications.json'
+#Value to mutliply yolo confidence scores
+yolo_multiplier = .5
 
-def group_events(prediction_image_df):
-    '''Convert predictions in terms of events'''
-    prediction_event_df = pd.pivot_table(prediction_image_df, index = 'event_id',
-              columns = 'class_name',
-              values = 'class',
-              aggfunc=len, fill_value=0).reset_index() #len(x.unique())).fillna(0)
-    return prediction_event_df
-
-def interpret_event_predictions(prediction_event_df):
-    return prediction_event_df.apply(lambda x : 'empty' if x['animal'] == 0 else 'animal', axis = 1)
-
-def conf_score_calcs(stage_1, stage_1_pivot, model_type):
-    animal_event_ids = stage_1_pivot[~(stage_1_pivot['event_prediction'] == 'empty')]['event_id']
-    stage_1_animal = stage_1[stage_1['event_id'].isin(animal_event_ids)]
-    stage_1_animal[stage_1_animal['class_name'] == 'animal']
-    stage_1_animal_conf = stage_1_animal[['event_id','conf']].groupby('event_id').mean()
-
-    stage_1_blank = stage_1[~stage_1['event_id'].isin(animal_event_ids)]
-    stage_1_blank_conf = stage_1_blank[['event_id','conf']].groupby('event_id').mean()
-
-    effnet_conf_scores = pd.concat([stage_1_animal_conf, stage_1_blank_conf])
-
-    return effnet_conf_scores
 
 ## YOLO
 def yolo_stage_2_read_file(top_path, yolo_file):
-    #Txt file to dataframe
-    #We are taking the TOP confidence score species for each image as the species
-    #Count is the count for all bounding boxes drawn in image
+    '''Input: yolo txt file with class, conf score and bounding box coords.
+    Output: pandas dataframe with columns 'filename', 'class', 'count', 'conf_score_max
+
+    We are taking the TOP confidence score species for each image as the species
+    Count is the count for all bounding boxes drawn in image'''
 
     with open(top_path + yolo_file, 'r') as f:
         yolo_lines = f.readlines()
@@ -112,11 +98,15 @@ def yolo_stage_2_read_file(top_path, yolo_file):
     return yolo_stage_2_pred
 
 def yolo_stage_2_image_to_event_pred(yolo_stage_2_pred):
-    #Event column- remove A,B,C appendix
+    ''' Input: dataframe of image predictions and counts
+    Output: dataframe of event predictions and counts
+
+    The three cases to handle are events with 3 different predictions across images and
+     2 different and all the same prediction across the images.
+    '''
     yolo_stage_2_pred['event_id'] = yolo_stage_2_pred['filename'].str[:-1]
 
-
-    ## Events with muliple images of same class
+    ### Events with muliple images of same class
     #Species determination
     #Groupby event, class
     event_class_group_count = pd.DataFrame(yolo_stage_2_pred.groupby(['event_id', 'class']).count()['filename']).reset_index().rename(columns = {'filename': 'count_rows'})
@@ -145,7 +135,7 @@ def yolo_stage_2_image_to_event_pred(yolo_stage_2_pred):
              on = 'event_id',
              how = 'left')
 
-    ## Events with all different labels
+    ### Events with all different labels
     predictions_single_count = yolo_stage_2_pred[~yolo_stage_2_pred['event_id'].isin(majority_df['event_id'])]
 
     event_list = []
@@ -193,13 +183,12 @@ def yolo_stage_2_image_to_event_pred(yolo_stage_2_pred):
                   conf_score_max_list)),
                 columns = ['event_id', 'class', 'count','conf_score_max'])
 
+    #Merge the predictions from events with more than one prediction and events w
+    #with all same prediction
     predictions_by_events_df = pd.concat([majority_df, single_class_df])
-
-
     yolo_preds_df = pd.merge(predictions_by_events_df, labels,
              how = 'left',
              on = 'class')
-
     yolo_preds_df = yolo_preds_df.rename(columns = {'class': 'pred_class',
                                                    'conf_score_max': 'conf_score',
                                                     'count': 'pred_count',
@@ -264,36 +253,49 @@ def effnet_stage_2_read_file(top_path, effnet_file):
 
     return effnet_stage_2_preds_df
 
-def model_pred_merge(yolo_stage_1_pred_conf, effnet_stage_1_pred_conf):
-    common = effnet_stage_1_pred_conf[effnet_stage_1_pred_conf['event_id'].isin(yolo_stage_1_pred_conf.event_id)]
-    common_merged = pd.merge(common, yolo_stage_1_pred_conf,
-             on = 'event_id',
-             how = 'left')
-    common_merged = common_merged.rename(columns = {'event_prediction_x': 'effnet_pred',
-                                                   'event_prediction_y': 'yolo_pred'})
-    common_merged = common_merged.drop(columns = ['animal', 'empty'])
+def stage_2_model_pred_merge(yolo_stage_2_event_pred, effnet_stage_2_event_pred):
+    '''Merge the predictions from yolo and effnet into a single df '''
 
-    return common_merged
+    yolo_stage_2_event_pred = yolo_stage_2_event_pred.rename(columns = {'pred_class': 'pred_class_yolo',
+                                                   'conf_score': 'conf_score_yolo',
+                                                   'pred_count': 'pred_count_yolo',
+                                                   'pred_class_name': 'pred_class_name_yolo'})
+    effnet_stage_2_event_pred = effnet_stage_2_event_pred.rename(columns = {'pred_class': 'pred_class_effnet',
+                                                   'conf_score': 'conf_score_effnet',
+                                                   'pred_count': 'pred_count_effnet',
+                                                   'pred_class_name': 'pred_class_name_effnet'})
 
-def ensemble_pred_logic(ensemble_row, conf_thresh):
+    ensemble_pred_df = pd.merge(effnet_stage_2_event_pred, yolo_stage_2_event_pred,
+         on= 'event_id',
+         how = 'left')
+
+    return ensemble_pred_df
+
+def stage_2_ensemble_pred_logic(ensemble_row, yolo_multiplier):
     '''Function designed to run lambda, row by row to convert yolo and effnet_file
     preds into ensemble preds'''
 
-    if ensemble_row['effnet_pred'] == 'empty' and ensemble_row['conf'] < conf_thresh:
-        ensemble_pred =  ensemble_row['yolo_pred']
+    conf_score_effnet = ensemble_row['conf_score_effnet']
+    conf_score_yolo = ensemble_row['conf_score_yolo']
+
+    if conf_score_effnet > conf_score_yolo + (conf_score_yolo * yolo_multiplier):
+        pred_class_name_ensemble = ensemble_row['pred_class_name_effnet']
+
     else:
-        ensemble_pred = ensemble_row['effnet_pred']
+        pred_class_name_ensemble = ensemble_row['pred_class_name_yolo']
 
-    return ensemble_pred
+    return pred_class_name_ensemble
 
+def main():
+    yolo_stage_2_image_pred = yolo_stage_2_read_file(top_path, yolo_file)
+    yolo_stage_2_event_pred = yolo_stage_2_image_to_event_pred(yolo_stage_2_image_pred)
 
+    effnet_stage_2_event_pred = effnet_stage_2_read_file(top_path, effnet_file)
 
-top_path = '/Users/sleung2/Documents/MIDS Program/capstone/ensemble/phase 2-species/'
-yolo_file = 'output_no_wolf.txt'
-effnet_file = 'phase2_efficientnetb5_classifications.json'
-conf_thresh = .75
+    ensemble_event_pred = stage_2_model_pred_merge(yolo_stage_2_event_pred, effnet_stage_2_event_pred)
 
-yolo_stage_2_pred = yolo_stage_2_read_file(top_path, yolo_file)
-yolo_preds_df = yolo_stage_2_image_to_event_pred(yolo_stage_2_pred)
+    ensemble_event_pred['pred_class_name_ensemble'] = ensemble_event_pred.apply(lambda x: stage_2_ensemble_pred_logic(x, yolo_multiplier), axis =1)
 
-effnet_stage_2_preds_df = effnet_stage_2_read_file(top_path, effnet_file)
+    ensemble_event_pred.to_csv('/Users/sleung2/Documents/MIDS Program/capstone/ensemble/merged_stage_2_pred_conf.csv.csv', index = False)
+
+main()

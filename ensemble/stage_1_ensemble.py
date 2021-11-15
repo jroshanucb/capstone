@@ -7,6 +7,13 @@ import numpy as np
 from os import listdir
 from os.path import isfile, join
 
+top_path = '/Users/sleung2/Documents/MIDS Program/capstone/ensemble/phase 1-blank/'
+yolo_file = 'phase1_yolo.txt'
+effnet_file = 'phase1_efficientnetb0_classifications.json'
+
+#Threshold at which to overwrite effnet with yolo on empty images
+conf_thresh = .75
+
 def images_to_events(image_df, image_id_col = 'id'):
     '''Convert images to events'''
 
@@ -91,6 +98,7 @@ def effnet_blank_read_file(top_path, effnet_file):
     return effnet_stage_1_pred_conf
 
 def model_pred_merge(yolo_stage_1_pred_conf, effnet_stage_1_pred_conf):
+    '''Merge yolo and effnet predictions into single df '''
     common = effnet_stage_1_pred_conf[effnet_stage_1_pred_conf['event_id'].isin(yolo_stage_1_pred_conf.event_id)]
     common_merged = pd.merge(common, yolo_stage_1_pred_conf,
              on = 'event_id',
@@ -103,7 +111,8 @@ def model_pred_merge(yolo_stage_1_pred_conf, effnet_stage_1_pred_conf):
 
 def ensemble_pred_logic(ensemble_row, conf_thresh):
     '''Function designed to run lambda, row by row to convert yolo and effnet_file
-    preds into ensemble preds'''
+    preds into ensemble preds. Optimal performance seen when we only overwrite effnet_file
+    with yolo on the empties and at a certain threshold'''
 
     if ensemble_row['effnet_pred'] == 'empty' and ensemble_row['conf'] < conf_thresh:
         ensemble_pred =  ensemble_row['yolo_pred']
@@ -113,16 +122,13 @@ def ensemble_pred_logic(ensemble_row, conf_thresh):
     return ensemble_pred
 
 
+def main():
+    yolo_stage_1_pred_conf = yolo_blank_read_file(top_path, yolo_file)
+    effnet_stage_1_pred_conf = effnet_blank_read_file(top_path, effnet_file)
+    merged_stage_1_pred_conf = model_pred_merge(yolo_stage_1_pred_conf, effnet_stage_1_pred_conf)
 
-top_path = '/Users/sleung2/Documents/MIDS Program/capstone/ensemble/phase 1-blank/'
-yolo_file = 'phase1_yolo.txt'
-effnet_file = 'phase1_efficientnetb0_classifications.json'
-conf_thresh = .75
+    merged_stage_1_pred_conf['ensemble_pred'] = merged_stage_1_pred_conf.apply(lambda x: ensemble_pred_logic(x, conf_thresh), axis = 1)
 
-yolo_stage_1_pred_conf = yolo_blank_read_file(top_path, yolo_file)
-effnet_stage_1_pred_conf = effnet_blank_read_file(top_path, effnet_file)
-merged_stage_1_pred_conf = model_pred_merge(yolo_stage_1_pred_conf, effnet_stage_1_pred_conf)
+    merged_stage_1_pred_conf.to_csv('/Users/sleung2/Documents/MIDS Program/capstone/ensemble/merged_stage_1_pred_conf.csv', index = False)
 
-merged_stage_1_pred_conf['ensemble_pred'] = merged_stage_1_pred_conf.apply(lambda x: ensemble_pred_logic(x, conf_thresh), axis = 1)
-
-merged_stage_1_pred_conf.to_csv('/Users/sleung2/Documents/MIDS Program/capstone/model_pipeline/merged_stage_1_pred_conf.csv', index = False)
+main()
