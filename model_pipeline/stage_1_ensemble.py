@@ -3,20 +3,9 @@ import random
 import shutil, os
 import pandas as pd
 import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import classification_report
-import pylab as pl
-from matplotlib.pyplot import figure
-from collections import Counter
 
 from os import listdir
 from os.path import isfile, join
-
-#Read lines from txt results file
-
-#HELPER FUNCTIONS
 
 def images_to_events(image_df, image_id_col = 'id'):
     '''Convert images to events'''
@@ -34,6 +23,19 @@ def group_events(prediction_image_df):
 def interpret_event_predictions(prediction_event_df):
     return prediction_event_df.apply(lambda x : 'empty' if x['animal'] == 0 else 'animal', axis = 1)
 
+def conf_score_calcs(stage_1, stage_1_pivot, model_type):
+    animal_event_ids = stage_1_pivot[~(stage_1_pivot['event_prediction'] == 'empty')]['event_id']
+    stage_1_animal = stage_1[stage_1['event_id'].isin(animal_event_ids)]
+    stage_1_animal[stage_1_animal['class_name'] == 'animal']
+    stage_1_animal_conf = stage_1_animal[['event_id','conf']].groupby('event_id').mean()
+
+    stage_1_blank = stage_1[~stage_1['event_id'].isin(animal_event_ids)]
+    stage_1_blank_conf = stage_1_blank[['event_id','conf']].groupby('event_id').mean()
+
+    effnet_conf_scores = pd.concat([stage_1_animal_conf, stage_1_blank_conf])
+
+    return effnet_conf_scores
+
 ## YOLO
 def yolo_blank_read_file(top_path, yolo_file):
     '''Convert Yolo txt file to predictions df by event'''
@@ -47,8 +49,9 @@ def yolo_blank_read_file(top_path, yolo_file):
 
     for line in blank_yolo_lines:
 
-        image_name = line.split('Filename: ')[1].split('.jpg;')[0]
-        prediction = line.split('.jpg;')[1].split('; Bbox[list]')[0]
+        image_name = line.split('Filename: ')[1].split('; ')[0]
+        prediction = line.split('; ')[1].split('; Bbox[list]')[0]
+
         yolo_image_prediction_list.append(image_name)
         yolo_blank_prediction_list.append(prediction)
 
@@ -66,10 +69,10 @@ def yolo_blank_read_file(top_path, yolo_file):
     return yolo_stage_1_prediction_grouped
 
 ## Efficientnet
-def effnet_blank_read_file(top_path, yolo_file):
+def effnet_blank_read_file(top_path, effnet_file):
     '''Convert Effnet json file to predictions df by event'''
 
-    effnet_stage_1 = pd.read_json(top_path + yolo_file)
+    effnet_stage_1 = pd.read_json(top_path + effnet_file)
     effnet_stage_1 = effnet_stage_1['phase1_classification_results'].apply(pd.Series)
 
     effnet_stage_1['event_id'] = images_to_events(effnet_stage_1)
@@ -78,13 +81,48 @@ def effnet_blank_read_file(top_path, yolo_file):
 
     effnet_stage_1_grouped['event_prediction'] =  interpret_event_predictions(effnet_stage_1_grouped)
 
+    conf_scores = conf_score_calcs(effnet_stage_1, effnet_stage_1_grouped, 'effnet')
+
+    effnet_stage_1_pred_conf = pd.merge(effnet_stage_1_grouped, conf_scores,
+         how = 'left',
+         left_on = 'event_id',
+         right_index = True)[['event_id', 'event_prediction', 'conf']]
+
+    return effnet_stage_1_pred_conf
+
+def model_pred_merge(yolo_stage_1_pred_conf, effnet_stage_1_pred_conf):
+    common = effnet_stage_1_pred_conf[effnet_stage_1_pred_conf['event_id'].isin(yolo_stage_1_pred_conf.event_id)]
+    common_merged = pd.merge(common, yolo_stage_1_pred_conf,
+             on = 'event_id',
+             how = 'left')
+    common_merged = common_merged.rename(columns = {'event_prediction_x': 'effnet_pred',
+                                                   'event_prediction_y': 'yolo_pred'})
+    common_merged = common_merged.drop(columns = ['animal', 'empty'])
+
+    return common_merged
+
+def ensemble_pred_logic(ensemble_row, conf_thresh):
+    '''Function designed to run lambda, row by row to convert yolo and effnet_file
+    preds into ensemble preds'''
+
+    if ensemble_row['effnet_pred'] == 'empty' and ensemble_row['conf'] < conf_thresh:
+        ensemble_pred =  ensemble_row['yolo_pred']
+    else:
+        ensemble_pred = ensemble_row['effnet_pred']
+
+    return ensemble_pred
 
 
-    return effnet_stage_1_grouped
 
 top_path = '/Users/sleung2/Documents/MIDS Program/capstone/ensemble/phase 1-blank/'
 yolo_file = 'phase1_yolo.txt'
 effnet_file = 'phase1_efficientnetb0_classifications.json'
+conf_thresh = .75
 
-yolo_stage_1_prediction_grouped = yolo_blank_read_file(top_path, yolo_file)
-effnet_stage_1_grouped = effnet_blank_read_file(top_path, effnet_file)
+yolo_stage_1_pred_conf = yolo_blank_read_file(top_path, yolo_file)
+effnet_stage_1_pred_conf = effnet_blank_read_file(top_path, effnet_file)
+merged_stage_1_pred_conf = model_pred_merge(yolo_stage_1_pred_conf, effnet_stage_1_pred_conf)
+
+merged_stage_1_pred_conf['ensemble_pred'] = merged_stage_1_pred_conf.apply(lambda x: ensemble_pred_logic(x, conf_thresh), axis = 1)
+
+merged_stage_1_pred_conf.to_csv('/Users/sleung2/Documents/MIDS Program/capstone/model_pipeline/merged_stage_1_pred_conf.csv', index = False)
