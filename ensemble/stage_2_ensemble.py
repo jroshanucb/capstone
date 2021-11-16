@@ -296,6 +296,6 @@ def main():
 
     ensemble_event_pred['pred_class_name_ensemble'] = ensemble_event_pred.apply(lambda x: stage_2_ensemble_pred_logic(x, yolo_multiplier), axis =1)
 
-    ensemble_event_pred.to_csv('/Users/sleung2/Documents/MIDS Program/capstone/ensemble/merged_stage_2_pred_conf.csv.csv', index = False)
+    ensemble_event_pred.to_csv('/Users/sleung2/Documents/MIDS Program/capstone/ensemble/merged_stage_2_pred_conf.csv', index = False)
 
 main()
