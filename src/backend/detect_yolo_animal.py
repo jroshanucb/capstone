@@ -271,7 +271,9 @@ def process_images(
     iteration = 0
     # Organize events into a dictionary
     imagesDict = organize_events(source)
-    conn = db_init()
+
+    if (dbwrite != 'false'):
+        conn = db_init()
 
     # for every event from the event list, perform yolo inference for all images from an event
     model_output = {}
