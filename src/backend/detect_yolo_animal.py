@@ -178,7 +178,7 @@ def get_speciesname_from_id(id):
         speciesName = speciesList[idx]
     return speciesName
 
-def get_values_stmt(iteration, iter_size, modelid, model_output):
+def get_values_stmt(iteration, iter_size, modelid_int, model_output):
     sql_values_stmt = ""
 
     # Example model_output[key] = 
@@ -197,7 +197,7 @@ def get_values_stmt(iteration, iter_size, modelid, model_output):
     # }
     found = False
     counter = 1
-    model_num = int(modelid)
+    model_num = modelid_int
     for key, value in model_output.items():
         # 3611 / 3 = 1204 events total; add some buffer between model outputs i.e., 1250 events
         model_output_id = (model_num-1) * 1250 + iteration * iter_size + counter
@@ -212,16 +212,26 @@ def get_values_stmt(iteration, iter_size, modelid, model_output):
             if (len(dict1.keys()) > 0): # for images where no species exist, the dict will be empty
                 # ignore value2 for now
                 # image_id_species_name = [get_speciesname_from_id(int(float(sn))) for sn in dict1['Class']]
-                image_id_species_name = ','.join([get_speciesname_from_id(int(float(sn))) for sn in dict1['Class']])
-                image_id_conf = ','.join([cf for cf in dict1['Conf']])
-                image_id_count = len(dict1['Coords'])
+                if model_num == 1:
+                    image_id_species_name = ''
+                    image_id_conf = ''
+                    image_id_count = 0
+                else:
+                    image_id_species_name = ','.join([get_speciesname_from_id(int(float(sn))) for sn in dict1['Class']])
+                    image_id_conf = ','.join([cf for cf in dict1['Conf']])
+                    image_id_count = len(dict1['Coords'])
                 sql_values_stmt +=  "'" + image_id + "', '" + str(image_id_species_name) + "', '" + str(image_id_conf) + "', " + str(image_id_count)
-                sql_values_stmt +=  ", false, false, '"
-                coords_list = ""
-                for coords in dict1['Coords']:
-                    coords_list += coords + ";"
-                sql_values_stmt += coords_list[:-1] + "', "
+                # model_num = 1 -> blank or not model; 3 = Species classification model
+                if model_num == 1:
+                    sql_values_stmt +=  ", false, false, '', "
+                else:
+                    sql_values_stmt +=  ", false, false, '"
+                    coords_list = ""
+                    for coords in dict1['Coords']:
+                        coords_list += coords + ";"
+                    sql_values_stmt += coords_list[:-1] + "', "
             else:
+                # stays the same irrespective of the modelid = 1 or 3
                 # empty image with no predictions
                 sql_values_stmt +=  "'" + image_id + "', '', '', 0"
                 sql_values_stmt +=  ", true, false, '', "
@@ -241,14 +251,14 @@ def db_init():
 
     return conn
 
-def db_flush(iteration, iter_size, modelid, conn, model_output):
+def db_flush(iteration, iter_size, modelid_int, conn, model_output):
     # model_output has the format of 
     # model_output[image_group_id] = dict of fileInfer
     # fileInfer has the format of 
     # fileInfer[filename] = image_id, class (a number), coordinates (count from these numbers)
 
     sql_insert_stmt = get_insert_stmt()
-    sql_values_stmt = get_values_stmt(iteration, iter_size, modelid, model_output)
+    sql_values_stmt = get_values_stmt(iteration, iter_size, modelid_int, model_output)
     sql_stmt = sql_insert_stmt + sql_values_stmt[:-2]
     print("sql statment ---->", sql_stmt)
     cur = conn.cursor()
@@ -274,6 +284,8 @@ def process_images(
 
     if (dbwrite != 'false'):
         conn = db_init()
+    
+    modelid_int = int(modelid)
 
     # for every event from the event list, perform yolo inference for all images from an event
     model_output = {}
@@ -296,7 +308,7 @@ def process_images(
 
         # db flush for every 50 events
         if (dbwrite=='true' and count > 50):
-            db_flush(iteration, 50, modelid, conn, model_output)
+            db_flush(iteration, 50, modelid_int, conn, model_output)
             iteration = iteration + 1
             model_output = {}
             count = 1
@@ -305,7 +317,7 @@ def process_images(
             count = 1
 
     # final flush
-    db_flush(iteration, 50, modelid, conn, model_output)
+    db_flush(iteration, 50, modelid_int, conn, model_output)
 
     return
 
