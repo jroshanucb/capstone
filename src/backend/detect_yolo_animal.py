@@ -201,7 +201,8 @@ def get_values_stmt(iteration, iter_size, modelid_int, model_output):
     model_num = modelid_int
     for key, value in model_output.items():
         # 3611 / 3 = 1204 events total; add some buffer between model outputs i.e., 1250 events
-        model_output_id = (model_num-1) * 1250 + iteration * iter_size + counter
+        # 4961 / 3 = 1654 events total in yolo splits 4.1; add some beffer; 1700
+        model_output_id = (model_num-1) * 1700 + iteration * iter_size + counter
         counter = counter + 1
         image_group_id = key # this is the event_id
         if (key == 'SSWI000000019326807'):
