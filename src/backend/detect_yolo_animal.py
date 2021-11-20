@@ -147,9 +147,10 @@ def organize_events(
     imagesDict = {}
     count = 0
     for filename in os.listdir(source):
-        image_name = filename.strip().split('.')[0]
+        filename_tokens = filename.strip().split('.')
+        image_name = filename_tokens[0]
         eventId = image_name[:-1]
-        imageId = image_name[-1:]
+        imageId = image_name[-1:] + "." + filename_tokens[1]
         count = count + 1
         dict_eventId = imagesDict.get(eventId, "empty")
         if (dict_eventId == "empty"):
@@ -208,7 +209,8 @@ def get_values_stmt(iteration, iter_size, modelid_int, model_output):
         sql_values_stmt += "(" + str(model_output_id) + ", " + modelid + ", '" + image_group_id + "', "
         for key2, value2 in value.items():
             dict1 = value2
-            image_id = key2[-5:][0] # get 'C' from this file name 'SSWI000000020365431C.jpg'
+            # image_id = key2[-5:][0] # get 'C' from this file name 'SSWI000000020365431C.jpg'
+            image_id = key2.strip().split('.')[0][-1:] # get 'C' from this file name 'SSWI000000020365431C.jpg' or 'SSWI000000020365431C.jpeg'
             if (len(dict1.keys()) > 0): # for images where no species exist, the dict will be empty
                 # ignore value2 for now
                 # image_id_species_name = [get_speciesname_from_id(int(float(sn))) for sn in dict1['Class']]
@@ -295,7 +297,8 @@ def process_images(
         for id in value:
             # filename = "SSWI000000006489319A.jpg"    #1 elk 
             # filename = "SSWI000000022151861A.jpg"    #2 bears
-            filename = key+id+".jpg"
+            # filename = key+id+".jpg"
+            filename = key + id
 
             # YOLO inference call
             ret_preds= run(filename, **vars(cmd_options))
