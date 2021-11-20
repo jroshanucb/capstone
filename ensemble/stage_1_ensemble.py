@@ -7,12 +7,13 @@ import numpy as np
 from os import listdir
 from os.path import isfile, join
 
-top_path = '/Users/sleung2/Documents/MIDS Program/capstone/ensemble/phase 1-blank/'
-yolo_file = 'phase1_yolo.txt'
-effnet_file = 'phase1_efficientnetb0_classifications.json'
+#Read lines from txt results file
+top_path = '../results/JSON_txt_outputs/'
+yolo_file = 'phase1_yolo_yolosplits4_1.txt'
+effnet_file = 'phase1_efficientnetb0_classifications_yolosplits_4-1.json'
 
 #Threshold at which to overwrite effnet with yolo on empty images
-conf_thresh = .75
+conf_thresh = .9
 
 def images_to_events(image_df, image_id_col = 'id'):
     '''Convert images to events'''
@@ -129,6 +130,6 @@ def main():
 
     merged_stage_1_pred_conf['ensemble_pred'] = merged_stage_1_pred_conf.apply(lambda x: ensemble_pred_logic(x, conf_thresh), axis = 1)
 
-    merged_stage_1_pred_conf.to_csv('/Users/sleung2/Documents/MIDS Program/capstone/ensemble/merged_stage_1_pred_conf.csv', index = False)
+    merged_stage_1_pred_conf.to_csv('../results/merged_stage_1_pred_conf.csv', index = False)
 
 main()
