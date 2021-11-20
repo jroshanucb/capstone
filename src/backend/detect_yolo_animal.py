@@ -157,7 +157,7 @@ def organize_events(
             imagesDict[eventId] = [imageId]
         else:
             imagesDict[eventId] = imagesDict[eventId] + [imageId]
-    
+
     return imagesDict
 
 
@@ -179,7 +179,7 @@ def get_speciesname_from_id(id):
         speciesName = speciesList[idx]
     return speciesName
 
-def get_values_stmt(iteration, iter_size, modelid_int, model_output):
+def get_values_stmt(iteration, iter_size, modelid_int, model_output, numEvents):
     sql_values_stmt = ""
 
     # Example model_output[key] = 
@@ -201,19 +201,17 @@ def get_values_stmt(iteration, iter_size, modelid_int, model_output):
     model_num = modelid_int
     for key, value in model_output.items():
         # 3611 / 3 = 1204 events total; add some buffer between model outputs i.e., 1250 events
-        # 4961 / 3 = 1654 events total in yolo splits 4.1; add some beffer; 1700
-        model_output_id = (model_num-1) * 1700 + iteration * iter_size + counter
+        # yolo splits 4.1 has 2054 events; with 4961 images; add a buffer of 40 events across modelids
+        model_output_id = (model_num-1) * (numEvents + 40) + iteration * iter_size + counter
         counter = counter + 1
         image_group_id = key # this is the event_id
-        if (key == 'SSWI000000019326807'):
-            found = True
-        sql_values_stmt += "(" + str(model_output_id) + ", " + modelid + ", '" + image_group_id + "', "
+
+        sql_values_stmt += "(" + str(model_output_id) + ", " + str(model_num) + ", '" + image_group_id + "', "
         for key2, value2 in value.items():
             dict1 = value2
             # image_id = key2[-5:][0] # get 'C' from this file name 'SSWI000000020365431C.jpg'
             image_id = key2.strip().split('.')[0][-1:] # get 'C' from this file name 'SSWI000000020365431C.jpg' or 'SSWI000000020365431C.jpeg'
             if (len(dict1.keys()) > 0): # for images where no species exist, the dict will be empty
-                # ignore value2 for now
                 # image_id_species_name = [get_speciesname_from_id(int(float(sn))) for sn in dict1['Class']]
                 if model_num == 1:
                     image_id_species_name = ''
@@ -239,9 +237,16 @@ def get_values_stmt(iteration, iter_size, modelid_int, model_output):
                 sql_values_stmt +=  "'" + image_id + "', '', '', 0"
                 sql_values_stmt +=  ", true, false, '', "
 
-        if (found):
+        event_size = len(value.keys())
+        # if event has only 2 items, append nulls for the 3rd image
+        if (event_size == 2):
             sql_values_stmt += "'', '', '', 0, false, false, '', "
-            found = False
+
+        # if event has only 1 item, append nulls for the 2nd and 3rd image
+        if (event_size == 1):
+            sql_values_stmt += "'', '', '', 0, false, false, '', "
+            sql_values_stmt += "'', '', '', 0, false, false, '', "
+
         load_date = "to_date('10-11-2021','DD-MM-YYYY')"
         sql_values_stmt += load_date + "), "
 
@@ -254,14 +259,14 @@ def db_init():
 
     return conn
 
-def db_flush(iteration, iter_size, modelid_int, conn, model_output):
+def db_flush(iteration, iter_size, modelid_int, conn, model_output, numEvents):
     # model_output has the format of 
     # model_output[image_group_id] = dict of fileInfer
     # fileInfer has the format of 
     # fileInfer[filename] = image_id, class (a number), coordinates (count from these numbers)
 
     sql_insert_stmt = get_insert_stmt()
-    sql_values_stmt = get_values_stmt(iteration, iter_size, modelid_int, model_output)
+    sql_values_stmt = get_values_stmt(iteration, iter_size, modelid_int, model_output, numEvents)
     sql_stmt = sql_insert_stmt + sql_values_stmt[:-2]
     print("sql statment ---->", sql_stmt)
     cur = conn.cursor()
@@ -284,6 +289,7 @@ def process_images(
     iteration = 0
     # Organize events into a dictionary
     imagesDict = organize_events(source)
+    numEvents = len(imagesDict.keys())
 
     if (dbwrite != 'false'):
         conn = db_init()
@@ -312,7 +318,7 @@ def process_images(
 
         # db flush for every 50 events
         if (dbwrite=='true' and count > 50):
-            db_flush(iteration, 50, modelid_int, conn, model_output)
+            db_flush(iteration, 50, modelid_int, conn, model_output, numEvents)
             iteration = iteration + 1
             model_output = {}
             count = 1
@@ -321,7 +327,7 @@ def process_images(
             count = 1
 
     # final flush
-    db_flush(iteration, 50, modelid_int, conn, model_output)
+    db_flush(iteration, 50, modelid_int, conn, model_output, numEvents)
 
     return
 
