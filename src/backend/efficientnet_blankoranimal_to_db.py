@@ -1,9 +1,9 @@
-"""Load json data from efficientnet into DB (modelid 4)
+"""Load json data from efficientnet into DB
 
 Usage:
-    $ python3 path/to/efficientnet_results_to_db.py --source path/to/img.jpg --output_json path/to/out.json --dbwrite='false' -modelid='4'
+    $ python3 path/to/efficientnet_blankoranimal_to_db.py --source path/to/img.jpg --output_json path/to/out.json --dbwrite='false' -modelid='4'
     example:
-    python3 efficientnet_results_to_db.py --source "../../../data/test/yolo_splits3/test/images" --output_json "../../../project/models/model_outputs/phase2_efficientnetb5_classifications.json" --dbwrite='false' --modelid='4'
+    python3 efficientnet_blankoranimal_to_db.py --source "../../../data/test/yolo_splits3/test/images" --output_json "../../../project/models/model_outputs/phase1_efficientnetb0_classifications.json" --dbwrite='false' --modelid='4'
 
 Author:
     Javed Roshan
@@ -98,7 +98,10 @@ def get_values_stmt(iteration, iter_size, modelid, model_output, numEvents):
                 image_id_conf = dict1['Conf']
                 image_id_count = 0
                 sql_values_stmt +=  "'" + image_id + "', '" + str(image_id_species_name) + "', '" + str(image_id_conf) + "', " + str(image_id_count)
-                sql_values_stmt +=  ", false, false, '', "
+                if (image_id_species_name == 'blank'):
+                    sql_values_stmt +=  ", true, false, '', " # blank is true
+                else:
+                    sql_values_stmt +=  ", false, false, '', " # else it is animal, blank = false
             else:
                 # empty image with no predictions
                 sql_values_stmt +=  "'" + image_id + "', '', '', 0"
@@ -114,7 +117,7 @@ def get_values_stmt(iteration, iter_size, modelid, model_output, numEvents):
             sql_values_stmt += "'', '', '', 0, false, false, '', "
             sql_values_stmt += "'', '', '', 0, false, false, '', "
 
-        load_date = "to_date('10-11-2021','DD-MM-YYYY')"
+        load_date = "to_date('20-11-2021','DD-MM-YYYY')"
         sql_values_stmt += load_date + "), "
 
     return sql_values_stmt
@@ -144,7 +147,8 @@ def db_flush(iteration, iter_size, modelid, conn, model_output, numEvents):
     return
 
 def get_speciesname_from_id(id):
-    speciesList = ['bear', 'cottontail_snowshoehare', 'coyote', 'deer', 'elk', 'foxgray_foxred', 'opossum', 'raccoon', 'turkey', 'wolf']
+    # 0 is animal and 1 is blank
+    speciesList = ['animal', 'blank']
     idx = int(id)
     if idx > 9 or idx < 0:
         speciesName = 'other'
@@ -158,20 +162,14 @@ def load_effnet_json(output_json):
     with open(output_json) as json_file:
         data = json.load(json_file)
     
-    data = data['phase2_classification_results']
+    data = data['phase1_classification_results']
     for dict_list in data:
         value = dict_list
         newKey = value['id']
         effnet_json[newKey] = {}
-        class_list = ""
-        conf_list = ""
 
-        for key2, value2 in value['conf_dict'].items():
-            class_list += get_speciesname_from_id(key2) + ","
-            conf_list += str(value2[0]) + ","
-
-        effnet_json[newKey]['Class'] = class_list[:-1]
-        effnet_json[newKey]['Conf'] = conf_list[:-1]
+        effnet_json[newKey]['Class'] = value['class_name']
+        effnet_json[newKey]['Conf'] = value['conf']
 
     # print(effnet_json)
     return effnet_json

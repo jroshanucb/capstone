@@ -1,7 +1,7 @@
-"""Load json data from megadetector into DB
+"""Load json data from megadetector into DB (modeid = 5)
 
 Usage:
-    $ python3 path/to/detect_yolo_animal.py --source path/to/img.jpg --output_json path/to/out.json --dbwrite='false' -modelid='5'
+    $ python3 path/to/megad_results_to_db.py --source path/to/img.jpg --output_json path/to/out.json --dbwrite='false' -modelid='5'
     example:
     python3 megad_results_to_db.py --source "../../../data/test/yolo_splits3/test/images" --output_json="../../../project/models/model_outputs/phase2_megadetector_output_YOLO.json" --dbwrite='false' --modelid='5'
 
@@ -31,17 +31,24 @@ def organize_events(
     ):
     # populate the dictionary to check which events have images
     imagesDict = {}
+    # there are 2 file formats: SSWI000000012915863A.jpg & 3004659_2C.jpeg
     count = 0
     for filename in os.listdir(source):
-        image_name = filename.strip().split('.')[0]
-        eventId = image_name[:-1]
-        imageId = image_name[-1:]
+        filename_tokens = filename.strip().split('.')
+        image_name = filename_tokens[0]
+        if (image_name[0:2] == "SS"):
+            eventId = image_name[:-1]
+            imageId = image_name[-1:] + "." + filename_tokens[1]
+        else:
+            eventId = image_name[:-3]
+            imageId = image_name[-3:] + "." + filename_tokens[1]
         count = count + 1
         dict_eventId = imagesDict.get(eventId, "empty")
         if (dict_eventId == "empty"):
             imagesDict[eventId] = [imageId]
         else:
             imagesDict[eventId] = imagesDict[eventId] + [imageId]
+
     return imagesDict
 
 def get_insert_stmt():
@@ -53,7 +60,7 @@ def get_insert_stmt():
     sql_stmt += "load_date) values "
     return sql_stmt
 
-def get_values_stmt(iteration, iter_size, modelid, model_output):
+def get_values_stmt(iteration, iter_size, modelid, model_output, numEvents):
     sql_values_stmt = ""
     print('model output -------->>>>>>>', model_output)
 
@@ -67,29 +74,38 @@ def get_values_stmt(iteration, iter_size, modelid, model_output):
     model_num = int(modelid)
     for key, value in model_output.items():
         # 3611 / 3 = 1204 events total; add some buffer between model outputs i.e., 1250 events
-        model_output_id = (model_num-1) * 1250 + iteration * iter_size + counter
+        # yolo splits 4.1 has 2054 events; with 4961 images; add a buffer of 40 events across modelids
+        model_output_id = (model_num-1) * (numEvents + 40) + iteration * iter_size + counter
         counter = counter + 1
         image_group_id = key # this is the event_id
-        if (key == 'SSWI000000019326807'):
-            found = True
-        sql_values_stmt += "(" + str(model_output_id) + ", " + modelid + ", '" + image_group_id + "', "
+
+        sql_values_stmt += "(" + str(model_output_id) + ", " + str(model_num) + ", '" + image_group_id + "', "
         for key2, value2 in value.items():
             dict1 = value2
-            image_id = key2[-5:][0] # get 'C' from this file name 'SSWI000000020365431C.jpg'
+            image_id = key2.strip().split('.')[0][-1:] # get 'C' from this file name 'SSWI000000020365431C.jpg' or '2008329_0A.jpeg'
             if (value2['Count'] > 0): # for images where no species exist, coords will be empty
                 image_id_count = value2['Count']
                 image_id_coords = value2['Coords']
-                sql_values_stmt +=  "'" + image_id + "', '', '', " + str(image_id_count)
+                image_id_conf = value2['Conf']
+                # sql_values_stmt +=  "'" + image_id + "', '', '', " + str(image_id_count)
+                sql_values_stmt +=  "'" + image_id + "', '', '" + image_id_conf + "', " + str(image_id_count)
                 sql_values_stmt +=  ", false, false, '" + image_id_coords + "', "
             else:
                 # empty image with no predictions
                 sql_values_stmt +=  "'" + image_id + "', '', '', 0"
                 sql_values_stmt +=  ", true, false, '', "
 
-        if (found):
+        event_size = len(value.keys())
+        # if event has only 2 items, append nulls for the 3rd image
+        if (event_size == 2):
             sql_values_stmt += "'', '', '', 0, false, false, '', "
-            found = False
-        load_date = "to_date('10-11-2021','DD-MM-YYYY')"
+
+        # if event has only 1 item, append nulls for the 2nd and 3rd image
+        if (event_size == 1):
+            sql_values_stmt += "'', '', '', 0, false, false, '', "
+            sql_values_stmt += "'', '', '', 0, false, false, '', "
+
+        load_date = "to_date('20-11-2021','DD-MM-YYYY')"
         sql_values_stmt += load_date + "), "
 
     return sql_values_stmt
@@ -102,14 +118,14 @@ def db_init():
 
     return conn
 
-def db_flush(iteration, iter_size, modelid, conn, model_output):
+def db_flush(iteration, iter_size, modelid, conn, model_output, numEvents):
     # model_output has the format of 
     # model_output[image_group_id] = dict of fileInfer
     # fileInfer has the format of 
     # fileInfer[filename] = image_id, class (a number), coordinates (count from these numbers)
 
     sql_insert_stmt = get_insert_stmt()
-    sql_values_stmt = get_values_stmt(iteration, iter_size, modelid, model_output)
+    sql_values_stmt = get_values_stmt(iteration, iter_size, modelid, model_output, numEvents)
     sql_stmt = sql_insert_stmt + sql_values_stmt[:-2]
     print("sql statment ---->", sql_stmt)
     cur = conn.cursor()
@@ -133,19 +149,27 @@ def load_megad_json(output_json):
     with open(output_json) as json_file:
         data = json.load(json_file)
     
-    megad_counts = data['count']
-    megad_images = data['image_id']
-    megad_coords = data['yolo']
+    data = data['phase2_classification_results']
+    
     # key, value in image_id is in the format: '0': "SSWI000000020143548C.jpg"
-    for key, value in megad_images.items():
-        megad_json[value] = {}
-        megad_json[value]['Count'] = megad_counts[key]
-        coord_list = ""
-        for coords in megad_coords[key]:
-            # coords has a list of 4 elements
-            bbox = ','.join([str(item) for item in coords]) + ";"
-            coord_list += bbox
-        megad_json[value]['Coords'] = coord_list[:-1]
+    for key, value in data.items():
+        for dict_list in value:
+            key = dict_list['img_id']
+            megad_json[key] = {}
+            megad_json[key]['Count'] = len(dict_list['detections'])
+            coord_list = ""
+            conf_list = ""
+            for bbox_conf in dict_list['detections']:
+                # coords has a list of 4 elements
+                bbox = ','.join([str(item) for item in bbox_conf['bbox']]) + ";"
+                coord_list += bbox
+                conf_list += str(bbox_conf['conf']) + ";"
+            if (len(dict_list['detections']) == 0):
+                megad_json[key]['Coords'] = ""
+                megad_json[key]['Conf'] = ""
+            else:
+                megad_json[key]['Coords'] = coord_list[:-1]
+                megad_json[key]['Conf'] = conf_list[:-1]
 
     # print(megad_json)
     return megad_json
@@ -170,8 +194,11 @@ def process_images(
     iteration = 0
     # Organize events into a dictionary
     imagesDict = organize_events(source)
+    numEvents = len(imagesDict.keys())
+
     megad_json = load_megad_json(output_json)
-    conn = db_init()
+    if (dbwrite != 'false'):
+        conn = db_init()
 
     # for every event from the event list, perform yolo inference for all images from an event
     model_output = {}
@@ -179,19 +206,19 @@ def process_images(
     for key, value in imagesDict.items():
         fileInfer = {}
         for id in value:
-            filename = key+id+".jpg"
+            filename = key + id
 
             # get data from megadetector json
             ret_preds= getPreds(filename, megad_json)
 
             fileInfer[filename] = ret_preds
         model_output[key] = fileInfer
-        print(fileInfer)
+        # print(fileInfer)
         count += 1
 
         # db flush for every 50 events
         if (dbwrite=='true' and count > 50):
-            db_flush(iteration, 50, modelid, conn, model_output)
+            db_flush(iteration, 50, modelid, conn, model_output, numEvents)
             iteration = iteration + 1
             model_output = {}
             count = 1
@@ -200,7 +227,8 @@ def process_images(
             count = 1
     
     # final flush
-    db_flush(iteration, 50, modelid, conn, model_output)
+    if (dbwrite=='true'):
+        db_flush(iteration, 50, modelid, conn, model_output, numEvents)
 
     return
 

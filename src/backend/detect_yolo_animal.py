@@ -222,7 +222,7 @@ def get_values_stmt(iteration, iter_size, modelid_int, model_output, numEvents):
                     image_id_species_name = ''
                     image_id_conf = ''
                     image_id_count = 0
-                else:
+                else: # model_num == 3
                     image_id_species_name = ','.join([get_speciesname_from_id(int(float(sn))) for sn in dict1['Class']])
                     image_id_conf = ','.join([cf for cf in dict1['Conf']])
                     image_id_count = len(dict1['Coords'])
@@ -332,7 +332,8 @@ def process_images(
             count = 1
 
     # final flush
-    db_flush(iteration, 50, modelid_int, conn, model_output, numEvents)
+    if (dbwrite=='true'):
+        db_flush(iteration, 50, modelid_int, conn, model_output, numEvents)
 
     return
 
