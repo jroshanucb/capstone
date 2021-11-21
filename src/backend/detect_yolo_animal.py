@@ -145,12 +145,17 @@ def organize_events(
     ):
     # populate the dictionary to check which events have images
     imagesDict = {}
+    # there are 2 file formats: SSWI000000012915863A.jpg & 3004659_2C.jpeg
     count = 0
     for filename in os.listdir(source):
         filename_tokens = filename.strip().split('.')
         image_name = filename_tokens[0]
-        eventId = image_name[:-1]
-        imageId = image_name[-1:] + "." + filename_tokens[1]
+        if (image_name[0:2] == "SS"):
+            eventId = image_name[:-1]
+            imageId = image_name[-1:] + "." + filename_tokens[1]
+        else:
+            eventId = image_name[:-3]
+            imageId = image_name[-3:] + "." + filename_tokens[1]
         count = count + 1
         dict_eventId = imagesDict.get(eventId, "empty")
         if (dict_eventId == "empty"):
