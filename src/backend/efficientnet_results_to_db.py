@@ -98,7 +98,10 @@ def get_values_stmt(iteration, iter_size, modelid, model_output, numEvents):
                 image_id_conf = dict1['Conf']
                 image_id_count = 0
                 sql_values_stmt +=  "'" + image_id + "', '" + str(image_id_species_name) + "', '" + str(image_id_conf) + "', " + str(image_id_count)
-                sql_values_stmt +=  ", false, false, '', "
+                if (image_id_species_name == "blank"):
+                    sql_values_stmt +=  ", true, false, '', "
+                else:
+                    sql_values_stmt +=  ", false, false, '', "
             else:
                 # empty image with no predictions
                 sql_values_stmt +=  "'" + image_id + "', '', '', 0"
@@ -144,9 +147,9 @@ def db_flush(iteration, iter_size, modelid, conn, model_output, numEvents):
     return
 
 def get_speciesname_from_id(id):
-    speciesList = ['bear', 'cottontail_snowshoehare', 'coyote', 'deer', 'elk', 'foxgray_foxred', 'opossum', 'raccoon', 'turkey', 'wolf']
+    speciesList =  ['bear', 'blank', 'cottontail_snowshoehare', 'coyote', 'deer', 'elk', 'foxgray_foxred', 'opossum', 'raccoon', 'turkey', 'wolf']
     idx = int(id)
-    if idx > 9 or idx < 0:
+    if idx > 10 or idx < 0:
         speciesName = 'other'
     else:
         speciesName = speciesList[idx]
