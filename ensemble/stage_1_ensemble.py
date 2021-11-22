@@ -8,114 +8,67 @@ from os import listdir
 from os.path import isfile, join
 
 #Read lines from txt results file
-top_path = '../results/JSON_txt_outputs/'
-yolo_file = 'phase1_yolo_yolosplits4_1.txt'
-effnet_file = 'phase1_efficientnetb0_classifications_yolosplits_4-1.json'
-
+top_path = '../src/'
+output_file = 'model_output_11202021_4.csv'
 #Threshold at which to overwrite effnet with yolo on empty images
 conf_thresh = .9
 
-def images_to_events(image_df, image_id_col = 'id'):
-    '''Convert images to events'''
+#HELPER FUNCTIONS
 
-    return image_df['id'].apply(lambda x: x[:-5] if 'SSWI' in x else x.split('_')[0])
+def event_prediction_for_model(row):
+        if row['image_id_1_blank'] == True and row['image_id_2_blank'] == True and row['image_id_3_blank'] == True:
+            return 'blank'
+        else:
+            return 'animal'
 
-def group_events(prediction_image_df):
-    '''Convert predictions in terms of events'''
-    prediction_event_df = pd.pivot_table(prediction_image_df, index = 'event_id',
-              columns = 'class_name',
-              values = 'class',
-              aggfunc=len, fill_value=0).reset_index() #len(x.unique())).fillna(0)
-    return prediction_event_df
+def event_conf_for_model(row):
+    event_classification = row['event_prediction']
+    if event_classification == 'blank':
+        event_blank_bool = True
+    else:
+        event_blank_bool = False
 
-def interpret_event_predictions(prediction_event_df):
-    return prediction_event_df.apply(lambda x : 'empty' if x['animal'] == 0 else 'animal', axis = 1)
+    conf_score_list = []
+    for image_num in range(1,4):
+        if row['image_id_{}_blank'.format(image_num)] == event_blank_bool:
+            conf_score_list.append(float(row['image_id_{}_conf'.format(image_num)]))
 
-def conf_score_calcs(stage_1, stage_1_pivot, model_type):
-    animal_event_ids = stage_1_pivot[~(stage_1_pivot['event_prediction'] == 'empty')]['event_id']
-    stage_1_animal = stage_1[stage_1['event_id'].isin(animal_event_ids)]
-    stage_1_animal[stage_1_animal['class_name'] == 'animal']
-    stage_1_animal_conf = stage_1_animal[['event_id','conf']].groupby('event_id').mean()
+    return sum(conf_score_list)/ len(conf_score_list)
 
-    stage_1_blank = stage_1[~stage_1['event_id'].isin(animal_event_ids)]
-    stage_1_blank_conf = stage_1_blank[['event_id','conf']].groupby('event_id').mean()
-
-    effnet_conf_scores = pd.concat([stage_1_animal_conf, stage_1_blank_conf])
-
-    return effnet_conf_scores
 
 ## YOLO
-def yolo_blank_read_file(top_path, yolo_file):
-    '''Convert Yolo txt file to predictions df by event'''
+def blank_model_event_preds(top_path, output_file, model_id):
+    output_df = pd.read_csv(top_path+ output_file)
 
-    with open(top_path + yolo_file, 'r') as f:
-        blank_yolo_lines = f.readlines()
+    model_output_df = output_df[output_df['model_id'] == model_id]
 
-    yolo_image_prediction_list = []
-    yolo_blank_prediction_list = []
+    model_output_df['event_prediction'] = model_output_df.apply(lambda row: event_prediction_for_model(row), axis = 1)
 
+    model_output_df['event_conf'] = model_output_df.apply(lambda row: event_conf_for_model(row), axis = 1)
 
-    for line in blank_yolo_lines:
+    return model_output_df[[ 'model_id', 'image_group_id',
+       'event_prediction', 'event_conf']]
 
-        image_name = line.split('Filename: ')[1].split('; ')[0]
-        prediction = line.split('; ')[1].split('; Bbox[list]')[0]
-
-        yolo_image_prediction_list.append(image_name)
-        yolo_blank_prediction_list.append(prediction)
-
-    yolo_stage_1_prediction_df = pd.DataFrame({'id': yolo_image_prediction_list, 'image_prediction': yolo_blank_prediction_list})
-
-    #Create necessary columns
-    yolo_stage_1_prediction_df['event_id'] = images_to_events(yolo_stage_1_prediction_df)
-    yolo_stage_1_prediction_df['class_name'] = yolo_stage_1_prediction_df['image_prediction'].apply(lambda x: 'empty' if x == '' else 'animal')
-    yolo_stage_1_prediction_df['class'] = yolo_stage_1_prediction_df['class_name'].apply(lambda x: 0 if x == 'animal' else 1)
-
-    yolo_stage_1_prediction_grouped = group_events(yolo_stage_1_prediction_df)
-
-    yolo_stage_1_prediction_grouped['event_prediction'] =  interpret_event_predictions(yolo_stage_1_prediction_grouped)
-
-    return yolo_stage_1_prediction_grouped
-
-## Efficientnet
-def effnet_blank_read_file(top_path, effnet_file):
-    '''Convert Effnet json file to predictions df by event'''
-
-    effnet_stage_1 = pd.read_json(top_path + effnet_file)
-    effnet_stage_1 = effnet_stage_1['phase1_classification_results'].apply(pd.Series)
-
-    effnet_stage_1['event_id'] = images_to_events(effnet_stage_1)
-
-    effnet_stage_1_grouped = group_events(effnet_stage_1)
-
-    effnet_stage_1_grouped['event_prediction'] =  interpret_event_predictions(effnet_stage_1_grouped)
-
-    conf_scores = conf_score_calcs(effnet_stage_1, effnet_stage_1_grouped, 'effnet')
-
-    effnet_stage_1_pred_conf = pd.merge(effnet_stage_1_grouped, conf_scores,
-         how = 'left',
-         left_on = 'event_id',
-         right_index = True)[['event_id', 'event_prediction', 'conf']]
-
-    return effnet_stage_1_pred_conf
-
-def model_pred_merge(yolo_stage_1_pred_conf, effnet_stage_1_pred_conf):
+def model_pred_merge(yolo_model_output, effnet_model_output):
     '''Merge yolo and effnet predictions into single df '''
-    common = effnet_stage_1_pred_conf[effnet_stage_1_pred_conf['event_id'].isin(yolo_stage_1_pred_conf.event_id)]
-    common_merged = pd.merge(common, yolo_stage_1_pred_conf,
-             on = 'event_id',
-             how = 'left')
-    common_merged = common_merged.rename(columns = {'event_prediction_x': 'effnet_pred',
-                                                   'event_prediction_y': 'yolo_pred'})
-    common_merged = common_merged.drop(columns = ['animal', 'empty'])
+    blank_model_output = pd.concat([yolo_model_output, effnet_model_output])
 
-    return common_merged
+    blank_model_output_merged = pd.merge(effnet_model_output, yolo_model_output,
+            on = 'image_group_id')
+
+    blank_model_output_merged = blank_model_output_merged.rename(columns = {'event_prediction_x': 'effnet_pred',
+                                                                            'event_conf_x':'effnet_conf',
+                                                       'event_prediction_y': 'yolo_pred',
+                                                                           'event_conf_y':'yolo_conf'})
+
+    return blank_model_output_merged
 
 def ensemble_pred_logic(ensemble_row, conf_thresh):
     '''Function designed to run lambda, row by row to convert yolo and effnet_file
     preds into ensemble preds. Optimal performance seen when we only overwrite effnet_file
     with yolo on the empties and at a certain threshold'''
 
-    if ensemble_row['effnet_pred'] == 'empty' and ensemble_row['conf'] < conf_thresh:
+    if ensemble_row['effnet_pred'] == 'blank' and ensemble_row['effnet_conf'] < conf_thresh:
         ensemble_pred =  ensemble_row['yolo_pred']
     else:
         ensemble_pred = ensemble_row['effnet_pred']
@@ -123,13 +76,18 @@ def ensemble_pred_logic(ensemble_row, conf_thresh):
     return ensemble_pred
 
 
-def main():
-    yolo_stage_1_pred_conf = yolo_blank_read_file(top_path, yolo_file)
-    effnet_stage_1_pred_conf = effnet_blank_read_file(top_path, effnet_file)
-    merged_stage_1_pred_conf = model_pred_merge(yolo_stage_1_pred_conf, effnet_stage_1_pred_conf)
+def main(conf_thresh):
+    yolo_model_output = blank_model_event_preds(top_path, output_file, 1)
+    effnet_model_output = blank_model_event_preds(top_path, output_file, 2)
+    blank_model_output_merged = model_pred_merge(yolo_model_output, effnet_model_output)
 
-    merged_stage_1_pred_conf['ensemble_pred'] = merged_stage_1_pred_conf.apply(lambda x: ensemble_pred_logic(x, conf_thresh), axis = 1)
+    blank_model_output_merged['ensemble_pred'] = blank_model_output_merged.apply(lambda x: ensemble_pred_logic(x, conf_thresh), axis = 1)
 
-    merged_stage_1_pred_conf.to_csv('../results/merged_stage_1_pred_conf.csv', index = False)
+    blank_model_output_merged.to_csv('../ensemble/merged_stage_1_pred_conf.csv', index = False)
 
-main()
+    return
+
+#Threshold at which to overwrite effnet with yolo on empty images
+conf_thresh_list = 1
+
+main(conf_thresh)
