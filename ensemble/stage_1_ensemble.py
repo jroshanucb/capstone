@@ -7,11 +7,10 @@ import numpy as np
 from os import listdir
 from os.path import isfile, join
 
+
 #Read lines from txt results file
 top_path = '../src/'
 output_file = 'model_output_11202021_4.csv'
-#Threshold at which to overwrite effnet with yolo on empty images
-conf_thresh = .9
 
 #HELPER FUNCTIONS
 
@@ -46,7 +45,7 @@ def blank_model_event_preds(top_path, output_file, model_id):
 
     model_output_df['event_conf'] = model_output_df.apply(lambda row: event_conf_for_model(row), axis = 1)
 
-    return model_output_df[[ 'model_id', 'image_group_id',
+    return model_output_df[[ 'image_group_id',
        'event_prediction', 'event_conf']]
 
 def model_pred_merge(yolo_model_output, effnet_model_output):
@@ -76,18 +75,14 @@ def ensemble_pred_logic(ensemble_row, conf_thresh):
     return ensemble_pred
 
 
-def main(conf_thresh):
+def run_ensemble_stage_1(conf_thresh = 1):
+    '''conf_thresh: Threshold at which to overwrite effnet with yolo on empty images'''
     yolo_model_output = blank_model_event_preds(top_path, output_file, 1)
     effnet_model_output = blank_model_event_preds(top_path, output_file, 2)
     blank_model_output_merged = model_pred_merge(yolo_model_output, effnet_model_output)
 
     blank_model_output_merged['ensemble_pred'] = blank_model_output_merged.apply(lambda x: ensemble_pred_logic(x, conf_thresh), axis = 1)
 
-    blank_model_output_merged.to_csv('../ensemble/merged_stage_1_pred_conf.csv', index = False)
+    #blank_model_output_merged.to_csv('../ensemble/merged_stage_1_pred_conf.csv', index = False)
 
-    return
-
-#Threshold at which to overwrite effnet with yolo on empty images
-conf_thresh_list = 1
-
-main(conf_thresh)
+    return blank_model_output_merged[['image_group_id', 'ensemble_pred']]

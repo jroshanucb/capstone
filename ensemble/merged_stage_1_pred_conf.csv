@@ -40,7 +40,7 @@ model_id_x,image_group_id,effnet_pred,effnet_conf,model_id_y,yolo_pred,yolo_conf
 2,SSWI000000019826635,animal,0.9999444086666666,1,animal,,animal
 2,SSWI000000010724156,animal,0.955289245,1,animal,,animal
 2,SSWI000000019326586,animal,0.9999287923333334,1,animal,,animal
-2,2017384,blank,0.9156060816666667,1,animal,,blank
+2,2017384,blank,0.9156060816666667,1,animal,,animal
 2,SSWI000000006823389,animal,0.9999853773333333,1,animal,,animal
 2,2046820,blank,0.985595703,1,blank,,blank
 2,SSWI000000020143755,animal,0.99921302,1,animal,,animal
@@ -117,7 +117,7 @@ model_id_x,image_group_id,effnet_pred,effnet_conf,model_id_y,yolo_pred,yolo_conf
 2,SSWI000000016739008,animal,0.9999419846666666,1,animal,,animal
 2,SSWI000000020301953,animal,0.999624173,1,animal,,animal
 2,SSWI000000010724143,animal,0.9996636906666666,1,animal,,animal
-2,SSWI000000020365599,blank,0.9430749220000001,1,animal,,blank
+2,SSWI000000020365599,blank,0.9430749220000001,1,animal,,animal
 2,SSWI000000015519886,animal,0.9964716036666666,1,animal,,animal
 2,SSWI000000021189178,animal,0.519948959,1,animal,,animal
 2,SSWI000000019158866,animal,0.893124978,1,animal,,animal
@@ -154,7 +154,7 @@ model_id_x,image_group_id,effnet_pred,effnet_conf,model_id_y,yolo_pred,yolo_conf
 2,SSWI000000016467505,animal,0.9197695056666667,1,animal,,animal
 2,SSWI000000009518996,animal,0.757028878,1,blank,,animal
 2,3016569,blank,0.9988479413333334,1,blank,,blank
-2,SSWI000000020302006,blank,0.9927305183333334,1,animal,,blank
+2,SSWI000000020302006,blank,0.9927305183333334,1,animal,,animal
 2,SSWI000000017296337,animal,0.7005840936666666,1,animal,,animal
 2,SSWI000000020366072,animal,0.9822038213333334,1,animal,,animal
 2,SSWI000000020297665,animal,0.7044207453333332,1,animal,,animal
@@ -224,7 +224,7 @@ model_id_x,image_group_id,effnet_pred,effnet_conf,model_id_y,yolo_pred,yolo_conf
 2,3005830,blank,0.9706561166666666,1,blank,,blank
 2,SSWI000000020245612,animal,0.8509113193333334,1,animal,,animal
 2,3023332,blank,0.996469458,1,blank,,blank
-2,SSWI000000011771266,blank,0.9691221513333333,1,animal,,blank
+2,SSWI000000011771266,blank,0.9691221513333333,1,animal,,animal
 2,SSWI000000011273044,animal,0.9989125529999999,1,animal,,animal
 2,SSWI000000020366027,animal,0.9990227223333333,1,animal,,animal
 2,SSWI000000018197818,animal,0.8596155246666667,1,animal,,animal
@@ -276,7 +276,7 @@ model_id_x,image_group_id,effnet_pred,effnet_conf,model_id_y,yolo_pred,yolo_conf
 2,SSWI000000019124833,animal,0.9957780243333333,1,animal,,animal
 2,SSWI000000019158937,animal,0.982174158,1,animal,,animal
 2,SSWI000000020364568,animal,0.999996543,1,animal,,animal
-2,SSWI000000019117188,blank,0.9728736876666667,1,animal,,blank
+2,SSWI000000019117188,blank,0.9728736876666667,1,animal,,animal
 2,3041978,blank,0.9998957516666667,1,blank,,blank
 2,SSWI000000015327120,animal,0.9997625153333334,1,animal,,animal
 2,SSWI000000020143721,animal,0.9653581780000001,1,animal,,animal
@@ -289,7 +289,7 @@ model_id_x,image_group_id,effnet_pred,effnet_conf,model_id_y,yolo_pred,yolo_conf
 2,SSWI000000020144994,animal,0.9956460196666667,1,animal,,animal
 2,SSWI000000012343278,animal,0.556540191,1,animal,,animal
 2,SSWI000000013956157,animal,0.999448836,1,animal,,animal
-2,SSWI000000015066732,blank,0.9716093936666667,1,animal,,blank
+2,SSWI000000015066732,blank,0.9716093936666667,1,animal,,animal
 2,SSWI000000019697658,animal,0.970239202,1,animal,,animal
 2,SSWI000000020280591,animal,0.9081496400000001,1,animal,,animal
 2,3851197,animal,0.547606409,1,blank,,animal
@@ -369,7 +369,7 @@ model_id_x,image_group_id,effnet_pred,effnet_conf,model_id_y,yolo_pred,yolo_conf
 2,SSWI000000020301745,animal,0.9994881153333334,1,animal,,animal
 2,SSWI000000011771145,animal,0.9998850823333333,1,animal,,animal
 2,SSWI000000017168800,animal,0.7546957333333334,1,animal,,animal
-2,SSWI000000008964107,blank,0.9028467933333334,1,animal,,blank
+2,SSWI000000008964107,blank,0.9028467933333334,1,animal,,animal
 2,2035571,blank,0.9875707626666667,1,blank,,blank
 2,SSWI000000017094738,animal,0.7214419046666666,1,animal,,animal
 2,SSWI000000015074973,animal,0.99597166,1,animal,,animal
@@ -465,7 +465,7 @@ model_id_x,image_group_id,effnet_pred,effnet_conf,model_id_y,yolo_pred,yolo_conf
 2,SSWI000000018126846,animal,0.8415401180000001,1,blank,,animal
 2,SSWI000000020153092,animal,0.9908047123333333,1,blank,,animal
 2,SSWI000000020365186,animal,0.9204519590000001,1,animal,,animal
-2,SSWI000000011771294,blank,0.9688246246666666,1,animal,,blank
+2,SSWI000000011771294,blank,0.9688246246666666,1,animal,,animal
 2,SSWI000000020300368,animal,0.986285011,1,animal,,animal
 2,SSWI000000020301226,animal,0.8954650363333334,1,animal,,animal
 2,2987854,blank,0.9991409776666668,1,blank,,blank
@@ -576,7 +576,7 @@ model_id_x,image_group_id,effnet_pred,effnet_conf,model_id_y,yolo_pred,yolo_conf
 2,SSWI000000019828134,animal,0.9883801339999999,1,animal,,animal
 2,SSWI000000019807461,animal,0.9982283313333333,1,animal,,animal
 2,SSWI000000013550415,animal,0.9996981620000001,1,animal,,animal
-2,SSWI000000015017263,blank,0.9592287936666667,1,animal,,blank
+2,SSWI000000015017263,blank,0.9592287936666667,1,animal,,animal
 2,SSWI000000020301578,animal,0.653036793,1,animal,,animal
 2,SSWI000000020297690,animal,0.9134280084999999,1,animal,,animal
 2,SSWI000000021539261,animal,0.7274279593333333,1,animal,,animal
@@ -634,14 +634,14 @@ model_id_x,image_group_id,effnet_pred,effnet_conf,model_id_y,yolo_pred,yolo_conf
 2,SSWI000000021263480,animal,0.9326248766666666,1,animal,,animal
 2,SSWI000000010032546,animal,0.977802833,1,animal,,animal
 2,SSWI000000020301031,animal,0.998762111,1,animal,,animal
-2,SSWI000000020302005,blank,0.9934282103333333,1,animal,,blank
+2,SSWI000000020302005,blank,0.9934282103333333,1,animal,,animal
 2,SSWI000000019291437,animal,0.9999821983333333,1,animal,,animal
 2,SSWI000000019124702,animal,0.9961858193333333,1,animal,,animal
 2,SSWI000000011771179,animal,0.9995207786666667,1,animal,,animal
 2,SSWI000000020148829,animal,0.8460809186666668,1,animal,,animal
 2,SSWI000000017531492,animal,0.999781966,1,animal,,animal
 2,SSWI000000018229065,animal,0.9223783413333333,1,animal,,animal
-2,SSWI000000011771269,blank,0.941516757,1,animal,,blank
+2,SSWI000000011771269,blank,0.941516757,1,animal,,animal
 2,SSWI000000020364224,animal,0.9994890293333333,1,animal,,animal
 2,SSWI000000018519331,animal,0.9999626876666667,1,animal,,animal
 2,SSWI000000009453182,animal,0.970725715,1,animal,,animal
@@ -833,7 +833,7 @@ model_id_x,image_group_id,effnet_pred,effnet_conf,model_id_y,yolo_pred,yolo_conf
 2,SSWI000000019161127,animal,0.954759558,1,animal,,animal
 2,SSWI000000019327135,animal,0.9982368546666667,1,animal,,animal
 2,SSWI000000020364669,animal,0.563436985,1,animal,,animal
-2,SSWI000000017531438,blank,0.9559437233333332,1,animal,,blank
+2,SSWI000000017531438,blank,0.9559437233333332,1,animal,,animal
 2,SSWI000000020301685,animal,0.9077841839999999,1,animal,,animal
 2,SSWI000000020396050,animal,0.9996872743333333,1,animal,,animal
 2,SSWI000000015074956,animal,0.966849168,1,animal,,animal
@@ -1024,7 +1024,7 @@ model_id_x,image_group_id,effnet_pred,effnet_conf,model_id_y,yolo_pred,yolo_conf
 2,SSWI000000020299090,animal,0.9996726913333335,1,animal,,animal
 2,2028474,blank,0.9821411966666665,1,blank,,blank
 2,SSWI000000018802363,animal,0.505420029,1,animal,,animal
-2,SSWI000000011771292,blank,0.9807913300000001,1,animal,,blank
+2,SSWI000000011771292,blank,0.9807913300000001,1,animal,,animal
 2,SSWI000000008599486,animal,0.9923567176666666,1,animal,,animal
 2,SSWI000000015323237,animal,0.9998717703333334,1,animal,,animal
 2,SSWI000000018802359,animal,0.996995568,1,animal,,animal
@@ -1145,11 +1145,11 @@ model_id_x,image_group_id,effnet_pred,effnet_conf,model_id_y,yolo_pred,yolo_conf
 2,SSWI000000018605235,animal,0.9994571806666667,1,animal,,animal
 2,SSWI000000019160108,animal,0.999856194,1,animal,,animal
 2,SSWI000000021289470,animal,0.9139130513333332,1,animal,,animal
-2,SSWI000000017453149,blank,0.91894871,1,animal,,blank
+2,SSWI000000017453149,blank,0.91894871,1,animal,,animal
 2,SSWI000000010756470,animal,0.9988976516666668,1,animal,,animal
 2,SSWI000000020302028,animal,0.9730801379999999,1,animal,,animal
 2,3879392,animal,0.750083407,1,blank,,animal
-2,SSWI000000019521994,blank,0.9393863083333334,1,animal,,blank
+2,SSWI000000019521994,blank,0.9393863083333334,1,animal,,animal
 2,SSWI000000004418314,animal,0.9931743146666667,1,animal,,animal
 2,SSWI000000021359094,animal,0.999902765,1,animal,,animal
 2,SSWI000000020301590,animal,0.9199323653333332,1,animal,,animal
@@ -1230,7 +1230,7 @@ model_id_x,image_group_id,effnet_pred,effnet_conf,model_id_y,yolo_pred,yolo_conf
 2,SSWI000000021936656,animal,0.942782422,1,animal,,animal
 2,SSWI000000019326038,animal,0.9998580216666667,1,animal,,animal
 2,2019882,blank,0.9990890819999999,1,blank,,blank
-2,SSWI000000022209809,blank,0.9249235590000001,1,animal,,blank
+2,SSWI000000022209809,blank,0.9249235590000001,1,animal,,animal
 2,SSWI000000015550901,animal,0.952071448,1,animal,,animal
 2,SSWI000000020825674,animal,0.996099432,1,animal,,animal
 2,SSWI000000020299470,animal,0.9998132583333333,1,animal,,animal
@@ -1377,9 +1377,9 @@ model_id_x,image_group_id,effnet_pred,effnet_conf,model_id_y,yolo_pred,yolo_conf
 2,SSWI000000019326589,animal,0.9993599055,1,animal,,animal
 2,SSWI000000020302120,animal,0.9996535383333334,1,animal,,animal
 2,SSWI000000020343934,animal,0.99985379,1,animal,,animal
-2,SSWI000000017531439,blank,0.943300863,1,animal,,blank
+2,SSWI000000017531439,blank,0.943300863,1,animal,,animal
 2,SSWI000000020504758,animal,0.9976999166666666,1,animal,,animal
-2,2011578,blank,0.9992364246666666,1,animal,,blank
+2,2011578,blank,0.9992364246666666,1,animal,,animal
 2,SSWI000000012873398,animal,0.9823222359999999,1,animal,,animal
 2,SSWI000000016173261,blank,0.838482618,1,blank,,blank
 2,SSWI000000018841769,animal,0.8098190430000001,1,animal,,animal
@@ -1495,7 +1495,7 @@ model_id_x,image_group_id,effnet_pred,effnet_conf,model_id_y,yolo_pred,yolo_conf
 2,SSWI000000019046332,animal,0.6418717205,1,animal,,animal
 2,SSWI000000020504150,animal,0.7451238433333334,1,animal,,animal
 2,SSWI000000020364790,animal,0.7463180823333334,1,blank,,animal
-2,3982947,blank,0.9400538206666665,1,animal,,blank
+2,3982947,blank,0.9400538206666665,1,animal,,animal
 2,SSWI000000020301727,animal,0.9932905233333332,1,animal,,animal
 2,SSWI000000019159773,animal,0.9975175259999999,1,animal,,animal
 2,SSWI000000020300579,animal,0.9855127926666666,1,animal,,animal
@@ -1604,7 +1604,7 @@ model_id_x,image_group_id,effnet_pred,effnet_conf,model_id_y,yolo_pred,yolo_conf
 2,SSWI000000019159169,animal,0.929022511,1,animal,,animal
 2,SSWI000000017365992,animal,0.974968354,1,animal,,animal
 2,3001165,blank,0.999434531,1,blank,,blank
-2,2042734,blank,0.9511328536666666,1,animal,,blank
+2,2042734,blank,0.9511328536666666,1,animal,,animal
 2,SSWI000000014752100,animal,0.8273047013333333,1,animal,,animal
 2,SSWI000000018396450,animal,0.8968818183333332,1,animal,,animal
 2,SSWI000000021799251,animal,0.6552509863333333,1,animal,,animal

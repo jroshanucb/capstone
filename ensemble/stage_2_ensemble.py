@@ -8,6 +8,11 @@ from collections import Counter
 from os import listdir
 from os.path import isfile, join
 
+
+#Read lines from txt results file
+top_path = '../src/'
+output_file = 'model_output_11202021_4.csv'
+
 #YOLO Species Logic
 # Species
 #
@@ -19,283 +24,219 @@ from os.path import isfile, join
 # Events with multiple images of same class- we will take the max of the majority class
 # Events with all different labels will get labelled with the count of highest conf score label
 
-# Labels to codes
-labels = pd.DataFrame(['foxgray_foxred',
-              'cottontail_snowshoehare',
-              'raccoon',
-              'opossum',
-              'turkey',
-              'bear',
-              'elk',
-              'deer',
-              'coyote',
-              'wolf']).sort_values(0)
-labels = labels.rename(columns = {0: 'species'})
-labels.insert(0, 'class', range(0, len(labels)))
+"""
+output:
+event level: event_id, species class name, count, bounding boxes, top3 dict (species name: confidence)
+scale yolo top1 by 1.5x
 
-#Directories and yolo multiplier
-top_path = '/Users/sleung2/Documents/MIDS Program/capstone/ensemble/phase 2-species/'
-yolo_file = 'output_no_wolf.txt'
-effnet_file = 'phase2_efficientnetb5_classifications.json'
-#Value to mutliply yolo confidence scores
-yolo_multiplier = .5
+output format:
 
-
-## YOLO
-def yolo_stage_2_read_file(top_path, yolo_file):
-    '''Input: yolo txt file with class, conf score and bounding box coords.
-    Output: pandas dataframe with columns 'filename', 'class', 'count', 'conf_score_max
-
-    We are taking the TOP confidence score species for each image as the species
-    Count is the count for all bounding boxes drawn in image'''
-
-    with open(top_path + yolo_file, 'r') as f:
-        yolo_lines = f.readlines()
-
-    rows = []
-
-    for item in yolo_lines:
-
-        #Class number
-        item_split_1 = item.split(' Bbox[list]')[0]
-        class_conf_list = item_split_1.split(';')[1:-2]
-
-        conf_score_max = 0
-
-        i = 0
-        for class_conf in class_conf_list:
-            conf_score_int = float(class_conf.split(',Conf:')[1])
-
-
-            if conf_score_int > conf_score_max:
-                conf_score_max = conf_score_int
-                max_index = i
-
-            i += 1
-        try:
-            class_string = class_conf_list[max_index].split(',')[0]
-            class_num = float(class_string.split(':')[1])
-            class_num = int(class_num)
-        except:
-            class_num = 'Blank'
-
-        #Counts
-        count_split_1 = item.split(' Bbox[list]')[-1]
-        count_split_2 = count_split_1.replace(';', ',')
-        count_split_3 = count_split_2.split(',')
-        count = int((len(count_split_3)-1)/4)
-
-        #Filename
-        file_split_1 = item.split('Filename: ')[1]
-        file_name = file_split_1.split(';')[0].split('.jpg')[0]
-
-        row = [file_name, class_num, count, conf_score_max]
-
-        rows.append(row)
-
-    yolo_stage_2_pred = pd.DataFrame(rows, columns = ['filename', 'class', 'count', 'conf_score_max'])
-
-    return yolo_stage_2_pred
-
-def yolo_stage_2_image_to_event_pred(yolo_stage_2_pred):
-    ''' Input: dataframe of image predictions and counts
-    Output: dataframe of event predictions and counts
-
-    The three cases to handle are events with 3 different predictions across images and
-     2 different and all the same prediction across the images.
-    '''
-    yolo_stage_2_pred['event_id'] = yolo_stage_2_pred['filename'].str[:-1]
-
-    ### Events with muliple images of same class
-    #Species determination
-    #Groupby event, class
-    event_class_group_count = pd.DataFrame(yolo_stage_2_pred.groupby(['event_id', 'class']).count()['filename']).reset_index().rename(columns = {'filename': 'count_rows'})
-
-    #Filter by rows that have count greater than 1
-    event_class_group_count_majority = event_class_group_count[event_class_group_count['count_rows'] > 1]
-
-    #Remove blank events that are not a consensus for all 3 images
-    event_class_group_count_majority = event_class_group_count_majority[~((event_class_group_count_majority['class'] == 'Blank') &
-                                    (event_class_group_count_majority['count_rows'] < 3))]
-
-    #Count determination
-    event_class_group_majority_counts = pd.merge(yolo_stage_2_pred, event_class_group_count_majority,
-             how = 'inner',
-             on = ['event_id', 'class'])
-
-    event_class_majority_counts = event_class_group_majority_counts[['event_id', 'count']].groupby(['event_id']).max().reset_index()
-
-    event_max_conf_score = event_class_group_majority_counts[['event_id', 'conf_score_max']].groupby(['event_id']).max().reset_index()
-
-    majority_df = pd.merge(event_class_majority_counts, event_class_group_count_majority,
-             on = 'event_id',
-             how = 'left')[['event_id', 'count','class']]
-
-    majority_df = pd.merge(majority_df, event_max_conf_score,
-             on = 'event_id',
-             how = 'left')
-
-    ### Events with all different labels
-    predictions_single_count = yolo_stage_2_pred[~yolo_stage_2_pred['event_id'].isin(majority_df['event_id'])]
-
-    event_list = []
-    pred_list = []
-    count_list = []
-    conf_score_max_list = []
-
-    previous_event = ''
-    conf_score_group_max = 0
-    pred_class = ''
-    conf_score_group_max = 0
-
-    predictions_single_count_grouped = predictions_single_count.groupby(['event_id', 'class',
-                                                                         'conf_score_max'])
-
-    for group_name, group in predictions_single_count_grouped:
-
-        current_event = group_name[0]
-        current_class = group['class'].iloc[0]
-        current_conf_score = group['conf_score_max'].iloc[0]
-        current_count = group['count'].iloc[0]
-
-        #Check if we are looking at a new event
-        if current_event != previous_event:
-            conf_score_max_list.append(conf_score_group_max)
-            conf_score_group_max = 0
-            event_list.append(previous_event)
-            pred_list.append(pred_class)
-            count_list.append(current_count)
-
-        if conf_score_group_max < current_conf_score:
-            pred_class = current_class
-            conf_score_group_max = current_conf_score
-
-        previous_event = current_event
-
-    conf_score_max_list.append(conf_score_group_max)
-    event_list.append(previous_event)
-    pred_list.append(pred_class)
-    count_list.append(current_count)
-
-    single_class_df = pd.DataFrame(list(zip(event_list,
-                  pred_list,
-                  count_list,
-                  conf_score_max_list)),
-                columns = ['event_id', 'class', 'count','conf_score_max'])
-
-    #Merge the predictions from events with more than one prediction and events w
-    #with all same prediction
-    predictions_by_events_df = pd.concat([majority_df, single_class_df])
-    yolo_preds_df = pd.merge(predictions_by_events_df, labels,
-             how = 'left',
-             on = 'class')
-    yolo_preds_df = yolo_preds_df.rename(columns = {'class': 'pred_class',
-                                                   'conf_score_max': 'conf_score',
-                                                    'count': 'pred_count',
-                                                   'species': 'pred_class_name'})
-    return yolo_preds_df
-
-## Efficientnet
-def effnet_stage_2_read_file(top_path, effnet_file):
-    '''Convert Effnet json file to predictions df by event'''
-
-    model_results = pd.read_json(top_path + effnet_file)
-    df = model_results['phase2_classification_results'].apply(pd.Series)
-    df['event_id'] = df['id'].str.split('.jpg').str[0]
-    df['event_id'] = df['event_id'].str[:-1]
-
-
-    preds_dict = {}
-    for index, row in df.iterrows():
-        event_id = str(row['event_id'])
-        pred_class = row['class']
-        pred_conf = row['conf']
-        #print(event_id, pred_class, pred_conf)
-
-        result_dict = {
-            "class": pred_class,
-            "conf": pred_conf
+  { event_id: ######
+      {
+        species_class: 0
+        species_name: deer
+        count: 1
+        bbox: [
+          [x, y, w, h]
+        ]
+        conf: 0.79
+        top3: {
+          deer: 0.79,
+          elk: 0.4
+          fox: 0.1
         }
+      }
 
-        if event_id in preds_dict:
-            preds_dict[event_id].append(result_dict)
-        else:
-            preds_dict[event_id] = [result_dict]
+  }
+"""
 
-    final_preds_dict = {}
-    for key, value in preds_dict.items():
-        event_id = key
-        counts = Counter(d['class'] for d in value)
+def create_species_conf_dict(x, y):
+  if isinstance(x, float):
+    pass
+  else:
+    species_list = list(x.split(","))
+    conf_list = list(y.split(","))
+    return dict(zip(species_list, conf_list))
 
-        ## if all 3 predictions are different, defer to class with highest confidence
-        if len(counts) == 3:
-            highest_conf = max([x['conf'] for x in value])
-            pred_class = [x['class'] for x in value if x['conf']==highest_conf][0]
 
-      ## if there is an even number of predictions (2), defer to class with higher confidence
-        elif sum(counts.values()) < 3:
-            highest_conf = max([x['conf'] for x in value])
-            pred_class = [x['class'] for x in value if x['conf']==highest_conf][0]
+def merge_species_conf_dict_top3(x, y, z):
+  if x is None:
+    x = {'None': 0}
+  if y is None:
+    y = {'None': 0}
+  if z is None:
+    z = {'None': 0}
 
-      ## otherwise, class is based on majority class, conf score is based on highest score for
-      ## majority class
-        else:
-            most_common = {'most_common': counts.most_common(1)[0][0]}
-            pred_class = most_common['most_common']
-            highest_conf = max([x['conf'] for x in value if x['class'] == most_common['most_common']])
+  dict_list = [list(x.items())[0],list(y.items())[0],list(z.items())[0]]
+  #print(dict_list)
+  preds_dict = {}
 
-        final_preds_dict[event_id] = [pred_class, highest_conf]
-
-    effnet_stage_2_preds_df = pd.DataFrame.from_dict(final_preds_dict,  orient='index').reset_index()
-    effnet_stage_2_preds_df.columns=['event_id', 'pred_class', 'conf_score']
-    label_mapping = dict({0:'bear', 1:'cottontail_snowshoehare', 2:'coyote', 3:'deer', 4:'elk', 5:'foxgray_foxred', 6:'opossum', 7:'raccoon', 8:'turkey', 9:'wolf'})
-    effnet_stage_2_preds_df['pred_class_name'] = effnet_stage_2_preds_df['pred_class'].map(label_mapping)
-
-    return effnet_stage_2_preds_df
-
-def stage_2_model_pred_merge(yolo_stage_2_event_pred, effnet_stage_2_event_pred):
-    '''Merge the predictions from yolo and effnet into a single df '''
-
-    yolo_stage_2_event_pred = yolo_stage_2_event_pred.rename(columns = {'pred_class': 'pred_class_yolo',
-                                                   'conf_score': 'conf_score_yolo',
-                                                   'pred_count': 'pred_count_yolo',
-                                                   'pred_class_name': 'pred_class_name_yolo'})
-    effnet_stage_2_event_pred = effnet_stage_2_event_pred.rename(columns = {'pred_class': 'pred_class_effnet',
-                                                   'conf_score': 'conf_score_effnet',
-                                                   'pred_count': 'pred_count_effnet',
-                                                   'pred_class_name': 'pred_class_name_effnet'})
-
-    ensemble_pred_df = pd.merge(effnet_stage_2_event_pred, yolo_stage_2_event_pred,
-         on= 'event_id',
-         how = 'left')
-
-    return ensemble_pred_df
-
-def stage_2_ensemble_pred_logic(ensemble_row, yolo_multiplier):
-    '''Function designed to run lambda, row by row to convert yolo and effnet_file
-    preds into ensemble preds'''
-
-    conf_score_effnet = ensemble_row['conf_score_effnet']
-    conf_score_yolo = ensemble_row['conf_score_yolo']
-
-    if conf_score_effnet > conf_score_yolo + (conf_score_yolo * yolo_multiplier):
-        pred_class_name_ensemble = ensemble_row['pred_class_name_effnet']
-
+  for item in dict_list:
+    if item is None:
+      pass
     else:
-        pred_class_name_ensemble = ensemble_row['pred_class_name_yolo']
+      if item[0] in preds_dict:
+        preds_dict[item[0]].append(float(item[1]))
+      else:
+        preds_dict[item[0]] = [float(item[1])]
 
-    return pred_class_name_ensemble
 
-def main():
-    yolo_stage_2_image_pred = yolo_stage_2_read_file(top_path, yolo_file)
-    yolo_stage_2_event_pred = yolo_stage_2_image_to_event_pred(yolo_stage_2_image_pred)
+  return preds_dict
 
-    effnet_stage_2_event_pred = effnet_stage_2_read_file(top_path, effnet_file)
+def get_topk(x, k):
+  topk_event_dict = {}
+  top_ind = sorted(x, key=x.get, reverse=True)[:k]
+  conf_scores = {}
+  for i in top_ind:
+    conf_scores[i] = max(x[i])
 
-    ensemble_event_pred = stage_2_model_pred_merge(yolo_stage_2_event_pred, effnet_stage_2_event_pred)
+  return conf_scores
 
-    ensemble_event_pred['pred_class_name_ensemble'] = ensemble_event_pred.apply(lambda x: stage_2_ensemble_pred_logic(x, yolo_multiplier), axis =1)
+def get_pred_from_top3(consol_dict):
 
-    ensemble_event_pred.to_csv('/Users/sleung2/Documents/MIDS Program/capstone/ensemble/merged_stage_2_pred_conf.csv', index = False)
+  ## if all 3 predictions are different classes, defer to class with highest confidence
+  if len(consol_dict) == 3:
+    return get_topk(consol_dict, 1)
 
-main()
+  ## if there is an even number of predictions (2), defer to class with more appearances (has a longer list)
+  elif len(consol_dict) == 2:
+    max_key = max(consol_dict, key= lambda x: len(set(consol_dict[x])))
+    return {max_key: max(consol_dict[max_key])}
+
+  ## if there is only one class of predictions, return the class with highest confidence
+  else:
+    return get_topk(consol_dict, 1)
+
+def merge_species_conf_dict(x, y, z):
+  dict_list = [x,y,z]
+  #print(dict_list)
+  preds_dict = {}
+
+  for item in dict_list:
+    if item is None:
+      pass
+    else:
+      for key, value in item.items():
+        if key in preds_dict:
+          preds_dict[key].append(value)
+        else:
+          preds_dict[key] = [value]
+
+  return preds_dict
+
+
+"""
+before we combine scores, we should weight the predictions between model_id3 and model_id4
+to slightly bias the scores towards model_id3
+
+80/67 = 1.2
+
+multiply topk_conf_3 by 1.2
+divide topk_conf_4 by 1.2
+"""
+
+def scale_model_id3(x):
+  ## x is a dictionary
+  intermed_dict = {key: float(value) * 1.2 for key, value in x.items()}
+  ## cap maximum possible score at 0.99
+  output_dict = {key: (0.99 if float(value) > 1 else float(value)) for key, value in intermed_dict.items()}
+  return output_dict
+
+def scale_model_id4(x):
+  ## x is a dictionary
+  return {key: float(value) / 1.2 for key, value in x.items()}
+
+
+"""
+output final topk dictionary of species predictions and their confidence scores
+"""
+
+def combine_topk_conf(x, y):
+  dict_list = [x,y]
+  #print(dict_list)
+  preds_dict = {}
+
+  for item in dict_list:
+    if item is None:
+      pass
+    else:
+      for key, value in item.items():
+        if key in preds_dict:
+          preds_dict[key].append(value)
+        else:
+          preds_dict[key] = [value]
+
+  return preds_dict
+
+def get_final_topk(x, k):
+  topk_event_dict = {}
+  top_ind = sorted(x, key=x.get, reverse=True)[:k]
+  conf_scores = {}
+  for i in top_ind:
+    conf_scores[i] = max(x[i])
+
+  return conf_scores
+
+"""
+output final event prediction, conf score
+"""
+def output_final_pred_species(x):
+  if not x:
+    return None
+  else:
+    intermed_dict = {key: float(value) for key, value in x.items()}
+    top_ind = sorted(intermed_dict, key=intermed_dict.get, reverse=True)[:1]
+    #print(top_ind)
+    return top_ind[0]
+
+def output_final_pred_conf(x):
+  if not x:
+    return None
+  else:
+    intermed_dict = {key: float(value) for key, value in x.items()}
+    top_ind = sorted(intermed_dict, key=intermed_dict.get, reverse=True)[:1]
+    #print(top_ind)
+    return x[top_ind[0]]
+
+def run_ensemble_stage_2():
+
+    sample_input = pd.read_csv(top_path + output_file)
+
+    df_model_id3 = sample_input[sample_input.model_id == 3]
+    df_model_id4 = sample_input[sample_input.model_id == 4]
+
+    df_model_id3['img1_species_conf_dict'] = df_model_id3.apply(lambda x: create_species_conf_dict(x.image_id_1_species_name, x.image_id_1_conf), axis=1)
+    df_model_id3['img2_species_conf_dict'] = df_model_id3.apply(lambda x: create_species_conf_dict(x.image_id_2_species_name, x.image_id_2_conf), axis=1)
+    df_model_id3['img3_species_conf_dict'] = df_model_id3.apply(lambda x: create_species_conf_dict(x.image_id_3_species_name, x.image_id_3_conf), axis=1)
+
+    df_model_id4['img1_species_conf_dict'] = df_model_id4.apply(lambda x: create_species_conf_dict(x.image_id_1_species_name, x.image_id_1_conf), axis=1)
+    df_model_id4['img2_species_conf_dict'] = df_model_id4.apply(lambda x: create_species_conf_dict(x.image_id_2_species_name, x.image_id_2_conf), axis=1)
+    df_model_id4['img3_species_conf_dict'] = df_model_id4.apply(lambda x: create_species_conf_dict(x.image_id_3_species_name, x.image_id_3_conf), axis=1)
+
+
+    df_model_id3['consol_dict'] = df_model_id3.apply(lambda x: merge_species_conf_dict_top3(x.img1_species_conf_dict, x.img2_species_conf_dict, x.img3_species_conf_dict), axis=1)
+    df_model_id4['consol_dict'] = df_model_id4.apply(lambda x: merge_species_conf_dict_top3(x.img1_species_conf_dict, x.img2_species_conf_dict, x.img3_species_conf_dict), axis=1)
+
+    df_model_id3['top_pred'] = df_model_id3.apply(lambda x: get_pred_from_top3(x.consol_dict), axis=1)
+    df_model_id4['top_pred'] = df_model_id4.apply(lambda x: get_pred_from_top3(x.consol_dict), axis=1)
+
+    df_model_id3['top3_dict'] = df_model_id3.apply(lambda x: get_topk(merge_species_conf_dict(x.img1_species_conf_dict, x.img2_species_conf_dict, x.img3_species_conf_dict),3), axis=1)
+    df_model_id4['top3_dict'] = df_model_id4.apply(lambda x: get_topk(merge_species_conf_dict(x.img1_species_conf_dict, x.img2_species_conf_dict, x.img3_species_conf_dict),3), axis=1)
+
+    """
+    merge model_id3 and model_id4 at the event level
+    the final prediction dictionaries from both models can be on the same row
+    """
+    df_merge = pd.merge(df_model_id3, df_model_id4, how='inner', on="image_group_id", suffixes=('_3', '_4'))
+    df_merge = df_merge[['image_group_id', 'top_pred_3', 'top3_dict_3', 'top_pred_4', 'top3_dict_4']]
+
+    df_merge['topk_conf_3_scaled'] = df_merge.apply(lambda x: scale_model_id3(x.top3_dict_3), axis=1)
+    df_merge['topk_conf_4_scaled'] = df_merge.apply(lambda x: scale_model_id4(x.top3_dict_4), axis=1)
+
+
+    df_merge['event_final_topk_conf'] = df_merge.apply(lambda x: get_final_topk(combine_topk_conf(x.topk_conf_3_scaled, x.topk_conf_4_scaled),3), axis=1)
+    df_merge['event_final_pred'] = df_merge.apply(lambda x: output_final_pred_species(x.event_final_topk_conf), axis=1)
+    df_merge['event_final_pred_conf'] = df_merge.apply(lambda x: output_final_pred_conf(x.event_final_topk_conf), axis=1)
+
+    #df_merge.to_csv('../results/merged_stage_2_pred_conf.csv', index = False)
+    return df_merge[['image_group_id','event_final_topk_conf', 'event_final_pred']]
