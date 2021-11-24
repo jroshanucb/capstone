@@ -12,3 +12,5 @@ full_ensemble = full_ensemble.rename(columns={'ensemble_pred': 'blank',
                              'event_final_pred': 'species'})
 
 full_ensemble['blank'] = full_ensemble['blank'].apply(lambda x: True if x == 'blank' else False)
+
+full_ensemble.to_csv('../results/full_ensemble.csv', index = False)

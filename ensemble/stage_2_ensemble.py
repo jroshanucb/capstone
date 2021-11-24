@@ -51,8 +51,14 @@ output format:
 """
 
 def create_species_conf_dict(x, y):
+  """
+  zip class predictions and confidence scores together into a dictionary
+  at the image level
+  """
   if isinstance(x, float):
-    pass
+    species_list = ['blank']
+    conf_list = [str(0.99)]
+    return dict(zip(species_list, conf_list))
   else:
     species_list = list(x.split(","))
     conf_list = list(y.split(","))
@@ -60,12 +66,16 @@ def create_species_conf_dict(x, y):
 
 
 def merge_species_conf_dict_top3(x, y, z):
+  """
+  merge image-level dictionaries into event level
+  only gets the top prediction for each image
+  """
   if x is None:
-    x = {'None': 0}
+    x = {'blank': str(99)}
   if y is None:
-    y = {'None': 0}
+    y = {'blank': str(99)}
   if z is None:
-    z = {'None': 0}
+    z = {'blank': str(99)}
 
   dict_list = [list(x.items())[0],list(y.items())[0],list(z.items())[0]]
   #print(dict_list)
@@ -84,6 +94,9 @@ def merge_species_conf_dict_top3(x, y, z):
   return preds_dict
 
 def get_topk(x, k):
+  """
+  get top k entries in dictionary according to confidence score
+  """
   topk_event_dict = {}
   top_ind = sorted(x, key=x.get, reverse=True)[:k]
   conf_scores = {}
@@ -95,8 +108,21 @@ def get_topk(x, k):
 def get_pred_from_top3(consol_dict):
 
   ## if all 3 predictions are different classes, defer to class with highest confidence
-  if len(consol_dict) == 3:
+  ## result cannot be blank though
+  if len(consol_dict) == 3 and 'blank' not in consol_dict:
     return get_topk(consol_dict, 1)
+
+  elif len(consol_dict) == 3 and 'blank' in consol_dict:
+    temp_dict = consol_dict.copy()
+    del temp_dict['blank']
+    return get_topk(temp_dict, 1)
+
+  ## exception to the below rule is if there are blanks
+  elif len(consol_dict) == 2 and 'blank' in consol_dict:
+    temp_dict = consol_dict.copy()
+    del temp_dict['blank']
+    max_key = max(temp_dict, key= lambda x: len(set(temp_dict[x])))
+    return {max_key: max(temp_dict[max_key])}
 
   ## if there is an even number of predictions (2), defer to class with more appearances (has a longer list)
   elif len(consol_dict) == 2:
@@ -108,22 +134,31 @@ def get_pred_from_top3(consol_dict):
     return get_topk(consol_dict, 1)
 
 def merge_species_conf_dict(x, y, z):
+  """
+  combine full confidence dictionaries across images in an event
+  """
   dict_list = [x,y,z]
   #print(dict_list)
   preds_dict = {}
 
+  # for item in dict_list:
+  #   if item is None:
+  #     pass
+  #   else:
+  #     for key, value in item.items():
+  #       if key in preds_dict:
+  #         preds_dict[key].append(value)
+  #       else:
+  #         preds_dict[key] = [value]
   for item in dict_list:
-    if item is None:
-      pass
-    else:
-      for key, value in item.items():
-        if key in preds_dict:
-          preds_dict[key].append(value)
-        else:
-          preds_dict[key] = [value]
+    #print(item)
+    for key, value in item.items():
+      if key in preds_dict:
+        preds_dict[key].append(value)
+      else:
+        preds_dict[key] = [value]
 
   return preds_dict
-
 
 """
 before we combine scores, we should weight the predictions between model_id3 and model_id4
@@ -145,7 +180,6 @@ def scale_model_id3(x):
 def scale_model_id4(x):
   ## x is a dictionary
   return {key: float(value) / 1.2 for key, value in x.items()}
-
 
 """
 output final topk dictionary of species predictions and their confidence scores
@@ -179,24 +213,51 @@ def get_final_topk(x, k):
 
 """
 output final event prediction, conf score
+implement blank rule
+if highest prediction score is less than 30%, defer to blank
 """
 def output_final_pred_species(x):
-  if not x:
-    return None
+
+  ## if blank is in the top-3 predictions, it's probably a top prediction and could overrule
+  ## the animal predcitions, resulting in too many false negatives
+  if (len(x) == 3 and 'blank' in x) or (len(x) == 2 and 'blank' in x):
+
+    ## temporary dictionary with blank class removed
+    temp_dict = x.copy()
+    del temp_dict['blank']
+
+    ## get best available class that's not blank based on temporary dictionary
+    max_class = max(temp_dict, key=x.get)
+    max_conf = temp_dict[max_class]
+
+    ## set a threshold of 0.3
+    if max_conf <= 0.5:
+      ## defer to blank...use original dictionary
+      intermed_dict = {key: float(value) for key, value in x.items()}
+      top_ind = sorted(intermed_dict, key=intermed_dict.get, reverse=True)[:1]
+      return top_ind[0]
+
+    else:
+      ## use temporary dictionary
+      intermed_dict = {key: float(value) for key, value in temp_dict.items()}
+      top_ind = sorted(intermed_dict, key=intermed_dict.get, reverse=True)[:1]
+      return top_ind[0]
+
   else:
     intermed_dict = {key: float(value) for key, value in x.items()}
     top_ind = sorted(intermed_dict, key=intermed_dict.get, reverse=True)[:1]
     #print(top_ind)
     return top_ind[0]
 
-def output_final_pred_conf(x):
-  if not x:
-    return None
-  else:
-    intermed_dict = {key: float(value) for key, value in x.items()}
-    top_ind = sorted(intermed_dict, key=intermed_dict.get, reverse=True)[:1]
-    #print(top_ind)
-    return x[top_ind[0]]
+def output_final_pred_conf(x, dict_col):
+  # if not x:
+  #   return None
+  # else:
+  #   intermed_dict = {key: float(value) for key, value in x.items()}
+  #   top_ind = sorted(intermed_dict, key=intermed_dict.get, reverse=True)[:1]
+  #   #print(top_ind)
+  #   return x[top_ind[0]]
+  return dict_col[x]
 
 def run_ensemble_stage_2():
 
@@ -229,14 +290,14 @@ def run_ensemble_stage_2():
     """
     df_merge = pd.merge(df_model_id3, df_model_id4, how='inner', on="image_group_id", suffixes=('_3', '_4'))
     df_merge = df_merge[['image_group_id', 'top_pred_3', 'top3_dict_3', 'top_pred_4', 'top3_dict_4']]
+    #df_merge.head()
 
     df_merge['topk_conf_3_scaled'] = df_merge.apply(lambda x: scale_model_id3(x.top3_dict_3), axis=1)
     df_merge['topk_conf_4_scaled'] = df_merge.apply(lambda x: scale_model_id4(x.top3_dict_4), axis=1)
 
-
     df_merge['event_final_topk_conf'] = df_merge.apply(lambda x: get_final_topk(combine_topk_conf(x.topk_conf_3_scaled, x.topk_conf_4_scaled),3), axis=1)
     df_merge['event_final_pred'] = df_merge.apply(lambda x: output_final_pred_species(x.event_final_topk_conf), axis=1)
-    df_merge['event_final_pred_conf'] = df_merge.apply(lambda x: output_final_pred_conf(x.event_final_topk_conf), axis=1)
+    df_merge['event_final_pred_conf'] = df_merge.apply(lambda x: output_final_pred_conf(x.event_final_pred, x.event_final_topk_conf), axis=1)
 
     #df_merge.to_csv('../results/merged_stage_2_pred_conf.csv', index = False)
     return df_merge[['image_group_id','event_final_topk_conf', 'event_final_pred']]
