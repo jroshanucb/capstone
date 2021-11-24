@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { faCoffee } from '@fortawesome/free-solid-svg-icons';
 import { ApiserviceService } from '../apiservice.service';
 
+declare const loadselectors: any;
 
 @Component({
   selector: 'app-landing',
@@ -19,11 +20,19 @@ export class LandingComponent implements OnInit {
   animalcheck = false;
   faCoffee = faCoffee;
   event_id = "";
+
+  imageSrc1 = "";
+  imageSrc2 = "";
+  imageSrc3 = "";
   
   constructor(private service: ApiserviceService) { }
   
   datamapping(data): void {
     this.imageSrc = data.images[0];
+    this.imageSrc1 = data.images[0];
+    this.imageSrc2 = data.images[1];
+    this.imageSrc3 = data.images[2];
+
     this.animalcount = data.animalcount;
     this.animaltype = data.animaltype
     this.imagegroupid = data.imagegroupid;
@@ -34,6 +43,7 @@ export class LandingComponent implements OnInit {
 
 
   ngOnInit(): void {
+    loadselectors()
     this.service.getImages(this.event_id).subscribe((data:any)=>{
       this.datamapping(data)
     })

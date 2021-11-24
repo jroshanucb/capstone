@@ -30,7 +30,7 @@
               "src/assets/css/annotation.webflow.css",
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": ["src/assets/js/custom.js"]
           },
           "configurations": {
             "production": {

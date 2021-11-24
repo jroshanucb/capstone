@@ -1,16 +1,12 @@
 <style>
     
-    img {
-        width: 100%;
-        max-height: 1000px;
-        max-width: 1000px;
-    }
-    
     .flex-container {
         display:flex;
         flex-flow: row wrap;
         justify-content: center;
         padding-top: 20px;
+        padding-left: 40px;
+        padding-right: 40px;
     }
     
     .container123{
@@ -20,91 +16,155 @@
     }
     
     .leftcontainer{
-        flex-basis: 80%;
+        display: flex;
+        flex-basis: 70%;
+        justify-content: flex-end;
+        padding-right: 20px;
     }
     .rightcontainter{
-        flex-basis: 20%;
+        padding-left: 20px;
+        flex-basis: 30%;
         display: flex;
         flex-direction: column;
-        align-items: flex-start
+        align-items: flex-start;
+        
     }
     
     .imagecontainer {
-        height: 100%;
-        width: 100%;
-        max-width: 100%;
-        object-fit:cover;
+        display: flex;
+        width: 50vw;
+        flex-direction: row-reverse;
+    }
+    .images {
+        display: flex;
+        width: 90vw;
     }
     .verticalradiogroup{
         display: flex; 
         flex-direction: column;
     }
-    
+    .example-spacer {
+        flex: 1 1 auto;
+    }
+    .mat-toolbar h4{
+        font-style: normal;
+    font-variant-ligatures: normal;
+    font-variant-caps: normal;
+    font-variant-numeric: normal;
+    font-variant-east-asian: normal;
+    font-weight: 100;
+    font-stretch: normal;
+    font-size: 16px;
+    line-height: 32px;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+    }
+
+
+    .panel
+{
+  position: relative;
+  background-size:800px;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 85vh;
+  border-radius: 5px;
+  color: #ffffff;
+  cursor: pointer;
+  flex: .5;
+  margin: 10px;
+  transition: all 700ms ease;
+}
+
+
+.panel.active
+{
+  flex: 5;
+}
+
+.subright{
+    width: 300px;
+}
+
+.buttonsection{
+    display: flex;
+    flex-flow: row wrap;
+    padding: 20px;
+    justify-content: center;
+    grid-gap: 25px;
+}
+
+.countsection{
+    padding-top: 20px;
+}
+
+.mat-slider-horizontal {
+    width: 100%;
+}
+
+.mat-toolbar {
+    background: #0076a5;
+    color: white;
+}
     </style>
     
-    
+    <p>
+        <mat-toolbar>
+        
+        <span>Wisconsin Trails</span>
+        <span class="example-spacer"></span>
+        <span><h4>Annotate &nbsp;&nbsp;&nbsp;</h4></span>
+        <span><h4>Team&nbsp;&nbsp;&nbsp;</h4></span>
+      </mat-toolbar>
+      </p>
     
     <div class="flex-container">
         <div class="leftcontainer">
             <div class="imagecontainer">
-                <figure>
-                    <img [src]='imageSrc'>
-                  </figure>
-            </div>
-            <div class="container123">
-              <mat-radio-group aria-labelledby="example-radio-group-label">
-                <mat-radio-button class="example-radio-button" *ngFor="let imageObj of dataset.images; let i = index" [value]="imageObj" (change)="radioChange(imageObj)" [checked] = "(i==0) ? true : false">
-              </mat-radio-button>
-            </mat-radio-group>
+                    <div class="panel active" [style.background-image]="'url(' + imageSrc1 + ')'"></div>
+                    <div class="panel" [style.background-image]="'url(' + imageSrc2 + ')'"></div>
+                    <div class="panel" [style.background-image]="'url(' + imageSrc3 + ')'"></div>
 
-            
+                    
+                    
+
             </div>
+            
         </div>
         <div class="rightcontainter">
-            <!-- <div class="verticalradiogroup"> -->
-            <!-- <mat-radio-group class="verticalradiogroup" aria-labelledby="example-radio-group-label" [(ngModel)] = "animaltype">
-              <mat-radio-button class="example-radio-button" value="Turkey"> Turkey </mat-radio-button>
-              <mat-radio-button class="example-radio-button" value="Cottontail">Cottontail</mat-radio-button>
-              <mat-radio-button class="example-radio-button" value="Fox, Gray">Fox Gray</mat-radio-button>
-              <mat-radio-button class="example-radio-button" value="Fox, Red">Fox Red</mat-radio-button>
-              <mat-radio-button class="example-radio-button" value="Bear">Bear</mat-radio-button>
-              <mat-radio-button class="example-radio-button" value="Coyote">Coyote</mat-radio-button>
-              <mat-radio-button class="example-radio-button" value="Opossum">Opossum</mat-radio-button>
-              <mat-radio-button class="example-radio-button" value="Raccoon">Raccoon</mat-radio-button>
-              <mat-radio-button class="example-radio-button" value="Snowshoe Hare">Snowshoe Hare</mat-radio-button>
-              <mat-radio-button class="example-radio-button" value="Deer">Deer</mat-radio-button>
-              <mat-radio-button class="example-radio-button" value="Elk">Elk</mat-radio-button>
-              <mat-radio-button class="example-radio-button" value="Wolf">Wolf</mat-radio-button>
-              <mat-radio-button class="example-radio-button" value="Other" checked=true>Other</mat-radio-button>
-            </mat-radio-group> -->
-            <mat-button-toggle-group fxLayout="row wrap" name="categories_1" [(ngModel)] = "animaltype">
-                <mat-button-toggle fxFlex="50%" value="Turkey" checked>Turkey</mat-button-toggle>
-                <mat-button-toggle fxFlex="50%" value="Cottontail" checked>Cottontail</mat-button-toggle>
-                <mat-button-toggle fxFlex="50%" value="Fox, Gray" checked>Fox Gray</mat-button-toggle>
-                <mat-button-toggle fxFlex="50%" value="Fox, Red" checked>Fox Red</mat-button-toggle>
-                <mat-button-toggle fxFlex="50%" value="Bear" checked>Bear</mat-button-toggle>
-                <mat-button-toggle fxFlex="50%" value="Coyote" checked>Coyote</mat-button-toggle>
-                <mat-button-toggle fxFlex="50%" value="Opossum" checked>Opossum</mat-button-toggle>
-                <mat-button-toggle fxFlex="50%" value="Raccoon" checked>Raccoon</mat-button-toggle>
-                <mat-button-toggle fxFlex="50%" value="Snowshoe Hare" checked>Snowshoe Hare</mat-button-toggle>
-                <mat-button-toggle fxFlex="50%" value="Deer" checked>Deer</mat-button-toggle>
-                <mat-button-toggle fxFlex="50%" value="Elk" checked>Elk</mat-button-toggle>
-                <mat-button-toggle fxFlex="50%" value="Wolf" checked>Wolf</mat-button-toggle>
-                <mat-button-toggle fxFlex="100%" value="Other" checked>Other</mat-button-toggle>
-            </mat-button-toggle-group>
-            <!-- </div> -->
-            <h4>Animal Count: {{animalcountslider.value}}</h4>
-            <mat-slider #animalcountslider
-            class="example-margin"
-            thumbLabel
-            [max]="10"
-            [min]="0"
-            [step]="1"
-            [tickInterval]="1"
-            [(ngModel)] = "animalcount"
-            >
-        </mat-slider>
-        <button mat-raised-button (click)="submitdata()" color="primary">SUBMIT</button>
-        <button mat-raised-button (click)="submitskip()" color="primary">SKIP</button>
+            <div class="subright">
+                <mat-button-toggle-group fxLayout="row wrap" name="categories_1" [(ngModel)] = "animaltype">
+                    <mat-button-toggle fxFlex="50%" value="Turkey" checked>Turkey</mat-button-toggle>
+                    <mat-button-toggle fxFlex="50%" value="Cottontail" checked>Cottontail</mat-button-toggle>
+                    <mat-button-toggle fxFlex="50%" value="Fox, Gray" checked>Fox Gray</mat-button-toggle>
+                    <mat-button-toggle fxFlex="50%" value="Fox, Red" checked>Fox Red</mat-button-toggle>
+                    <mat-button-toggle fxFlex="50%" value="Bear" checked>Bear</mat-button-toggle>
+                    <mat-button-toggle fxFlex="50%" value="Coyote" checked>Coyote</mat-button-toggle>
+                    <mat-button-toggle fxFlex="50%" value="Opossum" checked>Opossum</mat-button-toggle>
+                    <mat-button-toggle fxFlex="50%" value="Raccoon" checked>Raccoon</mat-button-toggle>
+                    <mat-button-toggle fxFlex="50%" value="Snowshoe Hare" checked>Snowshoe Hare</mat-button-toggle>
+                    <mat-button-toggle fxFlex="50%" value="Deer" checked>Deer</mat-button-toggle>
+                    <mat-button-toggle fxFlex="50%" value="Elk" checked>Elk</mat-button-toggle>
+                    <mat-button-toggle fxFlex="50%" value="Wolf" checked>Wolf</mat-button-toggle>
+                    <mat-button-toggle fxFlex="100%" value="Other" checked>Other</mat-button-toggle>
+                </mat-button-toggle-group>
+
+                <div class="countsection">
+                    <h4>Animal Count: {{animalcountslider.value}}</h4>
+                </div>
+                <mat-slider #animalcountslider
+                class="example-margin mat-slider-thumb-label-showing cdk-mouse-focused"
+                thumbLabel
+                [max]="10"
+                [min]="0"
+                [step]="1"
+                [tickInterval]="1"
+                [(ngModel)] = "animalcount"
+                >
+                </mat-slider>
+                <div class="buttonsection">
+                    <button mat-raised-button (click)="submitdata()" color="primary">SUBMIT</button>
+                    <button mat-raised-button (click)="submitskip()" color="primary">SKIP</button>
+                </div>
+            </div>
         </div>
     </div>

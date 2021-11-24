@@ -19,6 +19,7 @@ import { ApiserviceService } from './apiservice.service'
 import { HttpClientModule } from '@angular/common/http';
 import {MatRadioModule} from '@angular/material/radio';
 import { FormsModule } from '@angular/forms';
+import {MatToolbarModule} from '@angular/material/toolbar';
 
 @NgModule({
   declarations: [
@@ -40,7 +41,8 @@ import { FormsModule } from '@angular/forms';
     MatButtonToggleModule,
     HttpClientModule,
     MatRadioModule,
-    FormsModule
+    FormsModule,
+    MatToolbarModule
   ],
   providers: [ApiserviceService],
   bootstrap: [AppComponent]
