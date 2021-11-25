@@ -71,7 +71,7 @@ def getDictFromDf(df):
         # conv_response += row['image_url_2'] + "', '" + row['image_url_3'] + "'" + "], " + "'animalcount': " + str(row['count']) + ", " 
         # conv_response += "'animaltype': '" + row['species_name'] + "'" + "}"
         conv_response['imagegroupid'] = row['image_group_id']
-        conv_response['images'] = [row['image_url_1'], row['image_url_2'], row['image_url_3']]
+        conv_response['images'] = [row['image_url_1'], row['image_url_2'], row['image_url_3'], row['image_url_1_bbox'], row['image_url_2_bbox'], row['image_url_3_bbox']]
         conv_response['animalcount'] = row['count']
         conv_response['animaltype'] = row['species_name']
         conv_response['animaltype2'] = row['species_name']
