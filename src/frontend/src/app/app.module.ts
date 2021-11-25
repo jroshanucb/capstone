@@ -20,6 +20,7 @@ import { HttpClientModule } from '@angular/common/http';
 import {MatRadioModule} from '@angular/material/radio';
 import { FormsModule } from '@angular/forms';
 import {MatToolbarModule} from '@angular/material/toolbar';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 
 @NgModule({
   declarations: [
@@ -42,7 +43,8 @@ import {MatToolbarModule} from '@angular/material/toolbar';
     HttpClientModule,
     MatRadioModule,
     FormsModule,
-    MatToolbarModule
+    MatToolbarModule,
+    MatSlideToggleModule
   ],
   providers: [ApiserviceService],
   bootstrap: [AppComponent]
