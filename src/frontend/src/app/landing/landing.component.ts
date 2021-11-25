@@ -20,6 +20,8 @@ export class LandingComponent implements OnInit {
   animalcheck = false;
   faCoffee = faCoffee;
   event_id = "";
+  isChecked = false;
+  setactive = false;
 
   imageSrc1 = "";
   imageSrc2 = "";
@@ -29,9 +31,16 @@ export class LandingComponent implements OnInit {
   
   datamapping(data): void {
     this.imageSrc = data.images[0];
+
+
     this.imageSrc1 = data.images[0];
     this.imageSrc2 = data.images[1];
     this.imageSrc3 = data.images[2];
+    if (this.isChecked) {
+      this.imageSrc1 = data.images[3];
+      this.imageSrc2 = data.images[4];
+      this.imageSrc3 = data.images[5];
+    }
 
     this.animalcount = data.animalcount;
     this.animaltype = data.animaltype
@@ -52,7 +61,22 @@ export class LandingComponent implements OnInit {
   radioChange(event) {
     this.imageSrc = event;
   }
+  onSpeciesClick(val: any){
+    this.animaltype = val;
+  }
+  onChange() {
+    console.log(this.isChecked);
+    if (this.isChecked) {
+      this.imageSrc1 = this.dataset.images[3];
+      this.imageSrc2 = this.dataset.images[4];
+      this.imageSrc3 = this.dataset.images[5];
+    } else {
+      this.imageSrc1 = this.dataset.images[0];
+      this.imageSrc2 = this.dataset.images[1];
+      this.imageSrc3 = this.dataset.images[2];
+    }
 
+  } 
   submitdata(){
     this.data = "{'imagegroupid' :" + this.imagegroupid + ", 'animaltype' :" + this.animaltype + ", 'animalcount' : " + this.animalcount + ", 'event_id' : " + this.event_id + "}";
 

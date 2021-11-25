@@ -17,13 +17,13 @@
     
     .leftcontainer{
         display: flex;
-        flex-basis: 70%;
+        flex-basis: 60%;
         justify-content: flex-end;
-        padding-right: 20px;
+               
     }
     .rightcontainter{
         padding-left: 20px;
-        flex-basis: 30%;
+        flex-basis: auto;
         display: flex;
         flex-direction: column;
         align-items: flex-start;
@@ -33,7 +33,7 @@
     .imagecontainer {
         display: flex;
         width: 50vw;
-        flex-direction: row-reverse;
+        
     }
     .images {
         display: flex;
@@ -83,6 +83,7 @@
 
 .subright{
     width: 300px;
+    padding-top: 44px;
 }
 
 .buttonsection{
@@ -105,6 +106,52 @@
     background: #0076a5;
     color: white;
 }
+
+.leftleftcontainer{
+    display: flex;
+    flex-direction: column;
+    padding-right: 20px; 
+    align-items: flex-end;
+}
+mat-slide-toggle{
+    padding-right: 10px; 
+}
+
+.mat-slide-toggle.mat-checked .mat-slide-toggle-bar {
+    background-color: rgb(170 235 168);
+}
+
+.mat-slide-toggle.mat-checked .mat-slide-toggle-thumb {
+    background-color: #42b36a;
+}
+
+.btn {
+  border: none;
+  outline: none;
+  padding: 5px 5px;
+  background-color: #f1f1f1;
+  cursor: pointer;
+  font-size: 18px;
+  width: 150px;
+  margin-bottom: 5px;
+}
+
+/* Style the active class, and buttons on mouse-over */
+.active, .btn:hover {
+  background-color: #666;
+  color: white;
+}
+
+#myDIV{
+    display:flex;
+    flex-direction: row;
+}
+
+.firstcolumn{
+    display:flex;
+    flex-direction: column;
+    margin-right:5px;
+}
     </style>
     
     <p>
@@ -118,21 +165,20 @@
       </p>
     
     <div class="flex-container">
+       
         <div class="leftcontainer">
-            <div class="imagecontainer">
-                    <div class="panel active" [style.background-image]="'url(' + imageSrc1 + ')'"></div>
-                    <div class="panel" [style.background-image]="'url(' + imageSrc2 + ')'"></div>
-                    <div class="panel" [style.background-image]="'url(' + imageSrc3 + ')'"></div>
-
-                    
-                    
-
+            <div class="leftleftcontainer">
+                <mat-slide-toggle (change)="onChange()" [(ngModel)]="isChecked">Bounding Box</mat-slide-toggle>
+                <div class="imagecontainer">
+                        <div class="panel active" [style.background-image]="'url(' + imageSrc1 + ')'"></div>
+                        <div class="panel" [style.background-image]="'url(' + imageSrc2 + ')'"></div>
+                        <div class="panel" [style.background-image]="'url(' + imageSrc3 + ')'"></div>
+                </div>
             </div>
-            
         </div>
         <div class="rightcontainter">
             <div class="subright">
-                <mat-button-toggle-group fxLayout="row wrap" name="categories_1" [(ngModel)] = "animaltype">
+                <!-- <mat-button-toggle-group fxLayout="row wrap" name="categories_1" [(ngModel)] = "animaltype">
                     <mat-button-toggle fxFlex="50%" value="Turkey" checked>Turkey</mat-button-toggle>
                     <mat-button-toggle fxFlex="50%" value="Cottontail" checked>Cottontail</mat-button-toggle>
                     <mat-button-toggle fxFlex="50%" value="Fox, Gray" checked>Fox Gray</mat-button-toggle>
@@ -146,7 +192,27 @@
                     <mat-button-toggle fxFlex="50%" value="Elk" checked>Elk</mat-button-toggle>
                     <mat-button-toggle fxFlex="50%" value="Wolf" checked>Wolf</mat-button-toggle>
                     <mat-button-toggle fxFlex="100%" value="Other" checked>Other</mat-button-toggle>
-                </mat-button-toggle-group>
+                </mat-button-toggle-group> -->
+
+                <div id="myDIV">
+                    <div class="firstcolumn">
+                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'Turkey' }" (click)="onSpeciesClick('Turkey')" value="Turkey">Turkey</button>
+                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'Cottontail'}" (click)="onSpeciesClick('Cottontail')"  value="Cottontail">Cottontail</button>
+                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'Fox, Gray'}" (click)="onSpeciesClick('Fox, Gray')"  value="Fox, Gray">Fox Gray</button>
+                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'Fox, Red'}" (click)="onSpeciesClick('Fox, Red')"  value="Fox, Red">Fox Red</button>
+                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'Bear'}" (click)="onSpeciesClick('Bear')"  value="Bear">Bear</button>
+                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'Coyote'}" (click)="onSpeciesClick('Coyote')"  value="Coyote">Coyote</button>
+                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'Opossum'}" (click)="onSpeciesClick('Opossum')"  value="Opossum">Opossum</button>
+                    </div>
+                    <div class="firstcolumn">
+                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'Raccoon'}" (click)="onSpeciesClick('Raccoon')"  value="Raccoon">Raccoon</button>
+                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'Snowshoe Hare'}" (click)="onSpeciesClick('Snowshoe Hare')"  value="Snowshoe Hare">Snowshoe Hare</button>
+                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'Deer'}" (click)="onSpeciesClick('Deer')"  value="Deer">Deer</button>
+                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'Elk'}" (click)="onSpeciesClick('Elk')"  value="Elk">Elk</button>
+                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'Wolf'}" (click)="onSpeciesClick('Wolf')"  value="Wolf">Wolf</button>
+                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'Other'}" (click)="onSpeciesClick('Other')"  value="Other">Other</button>
+                    </div>
+                  </div>
 
                 <div class="countsection">
                     <h4>Animal Count: {{animalcountslider.value}}</h4>
