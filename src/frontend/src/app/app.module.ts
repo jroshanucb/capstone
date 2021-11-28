@@ -21,11 +21,13 @@ import {MatRadioModule} from '@angular/material/radio';
 import { FormsModule } from '@angular/forms';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
+import { TeamsComponent } from './teams/teams.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    LandingComponent
+    LandingComponent,
+    TeamsComponent
   ],
   imports: [
     BrowserModule,
