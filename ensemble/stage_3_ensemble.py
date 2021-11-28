@@ -13,6 +13,8 @@ from PIL import Image
 
 #Read lines from csv output file
 ROOT = '../'
+foldername="src/"
+filename='model_output_11202021_4.csv'
 
 #YOLO Counts Logic
 #
@@ -26,7 +28,7 @@ def load_ground_truth(foldername=os.path.join(ROOT,"data/") , filename="test_lab
 
     return ground_truth
 
-def load_megadetector_output(foldername="results/JSON_txt_outputs/", filename='phase2_megadetector_classifications_yolosplits_4-1_YOLO.json'):#filename="phase2_megadetector_output_YOLO.json"):
+def load_megadetector_output(foldername="src/", filename='model_output_11202021_4.csv'):#filename="phase2_megadetector_output_YOLO.json"):
     """
     Pkg dependencies: os, glob, re, pandas
     Purpose:
@@ -34,23 +36,54 @@ def load_megadetector_output(foldername="results/JSON_txt_outputs/", filename='p
     Outputs:
     """
 
-    with open(os.path.join(ROOT,foldername, filename), 'r') as fin:
-        fobj = fin.read()
-        megadetector = json.loads(fobj)
+    output_file = pd.read_csv(os.path.join(ROOT,foldername, filename))
+    megadetector = output_file[output_file['model_id'] == 5]
 
-    event_list = []
-    img_list = []
-    detection_list = []
+    image_group_ids = []
+    image_ids = []
+    detection_conf_list = []
 
-    for event, image_set in megadetector['phase2_classification_results'].items():
-        for image in image_set:
-            event_list.append(image['event_id'])
-            img_list.append(image['img_id'])
-            detection_list.append(image['detections'])
+    for row, value in megadetector.iterrows():
+        for image in range(1,4):
+            image_group_ids.append(value['image_group_id'])
+            image_ids.append(value['image_id_{}'.format(image)])
 
-    megadetector_df = pd.DataFrame({'event_id': event_list,
-                  'image_id':img_list,
-                  'detections':detection_list})
+            #BBOXES
+            detection_int_string = value['image_id_{}_bbox'.format(image)]
+            if isinstance(detection_int_string, float):
+                detection_int_list = []
+            else:
+                detection_int_list = detection_int_string.split(';')
+            #detection_list.append(detection_int_list)
+
+            #CONF
+            conf_int_string = value['image_id_{}_conf'.format(image)]
+            if isinstance(conf_int_string, float):
+                conf_int_list = []
+            else:
+                conf_int_list = conf_int_string.split(';')
+            #conf_list.append(conf_int_list)
+
+            #BBOXES and CONF to list of dicts
+            detection_conf_int_list = []
+
+            if len(detection_int_list) > 0:
+
+                for bbox,conf in zip(detection_int_list, conf_int_list):
+                    detection_conf_dict = {'bbox': bbox,
+                                          'conf': conf}
+                    detection_conf_int_list.append(detection_conf_dict)
+
+            detection_conf_list.append(detection_conf_int_list)
+
+
+
+    megadetector_df = pd.DataFrame({'event_id': image_group_ids,
+                 'image_id': image_ids,
+                 'detections':detection_conf_list})
+
+    #Remove rows where there was no image for the event
+    megadetector_df = megadetector_df[~megadetector_df['image_id'].isnull()]
 
     def extract_yolo(list_of_detections):
         yolo_list = []
@@ -72,21 +105,14 @@ def load_megadetector_output(foldername="results/JSON_txt_outputs/", filename='p
     megadetector_df['all_conf'] = megadetector_df['detections'].apply(lambda x: extract_conf(x))
     megadetector_df['max_detection_conf'] = megadetector_df['all_conf'].apply(lambda x:  max(x) if len(x) > 0 else 0)
     megadetector_df['all_class_pred'] = megadetector_df['count'].apply(lambda x:[1]*x)
+    megadetector_df.loc[:, "length"] = megadetector_df['image_id'].apply(lambda x: len(x))
+    megadetector_df['image_id'] = megadetector_df['event_id'] + megadetector_df['image_id']
 
+    megadetector_df.drop(columns=['length'], inplace=True)
 
     return megadetector_df
 
-def split_and_convert(s):
-    """
-    Purpose: Utility function used in load_yolo_output function for bounding box.
-    """
-    new = []
-    out = s.split(',')
-    for i in out:
-        new.append(round(float(i), 4))
-    return new
-
-def load_yolo_output(foldername="results/JSON_txt_outputs/", filename="phase2_yolo_yolosplits4_1.txt"):
+def load_yolo_output(foldername="src/", filename='model_output_11202021_4.csv'):
     """
     Pkg dependencies: os, glob, re, pandas
     Purpose:
@@ -96,37 +122,40 @@ def load_yolo_output(foldername="results/JSON_txt_outputs/", filename="phase2_yo
     """
 
 
+    output_file = pd.read_csv(os.path.join(ROOT,foldername, filename))
+    yolo = output_file[output_file['model_id'] == 3]
 
-    # Load yolo model output file
-    with open(os.path.join(ROOT, foldername, filename), 'r') as fin:
-        yolov5 = fin.readlines()
+    image_group_ids = []
+    image_ids = []
+    detection_list = []
 
-    # Parse through file and pick out filename and bounding box
-    filenames = []
-    bbox = []
-    for line_num, line in enumerate(yolov5):
-        newline = line.split("\n")[0]
-        semicolon_idxs = [m.start() for m in re.finditer(";", newline)]
-        bbox_start, bbox_end = re.search(r"Bbox\[list]:", newline).start(), re.search(r"Bbox\[list]:", newline).end()
+    for row, value in yolo.iterrows():
+        for image in range(1,4):
+            image_group_ids.append(value['image_group_id'])
+            image_ids.append(value['image_id_{}'.format(image)])
 
-        for i, idx in list(zip(range(0,len(semicolon_idxs)), semicolon_idxs)):
-            # Filename
-            if i == 0:
-                filenames.append(newline[:idx].split("Filename: ")[1])#.lstrip()[:-4])
+            #BBOXES
+            detection_int_list = []
 
-        # Yolo Bounding box
-        bbox_data = newline[bbox_end:].lstrip().split(';')[:-1]
-        if len(bbox_data) == 0:
-            bbox.append([])
-        else:
-            subl = [split_and_convert(i) for i in bbox_data]
-            bbox.append(subl)
+            detection_int_string = value['image_id_{}_bbox'.format(image)]
+            if isinstance(detection_int_string, float):
+                detection_list.append(detection_int_list)
+            else:
+                detection_split_list = detection_int_string.split(';')
+                for bbox in detection_split_list:
 
-    # Construct DataFrame
-    yolov5 = pd.DataFrame([pd.Series(filenames), pd.Series(bbox)]).T
-    yolov5.columns = ["image_id", "yolo_bbox"]
-    yolov5.sort_values(by="image_id", inplace=True, ignore_index=True)
+                    detection_int_list.append(detection_split_list)
+
+                detection_list.append(detection_int_list)
+
+
+
+    yolov5 = pd.DataFrame({'event_id': image_group_ids,
+                 'image_id': image_ids,
+                 'yolo_bbox':detection_list})
+
     yolov5['yolo_count'] = yolov5['yolo_bbox'].apply(lambda x: len(x))
+    yolov5['image_id'] = yolov5['event_id'] + yolov5['image_id']
 
     return yolov5
 
@@ -151,22 +180,48 @@ def merge_md_yolo(yolo_df, megadetector_df):
 
     final_counts = pd.merge(merged_raw, gby_eventid_counts,
          on = 'event_id', how = 'left')
+    final_counts['image_id_appendix'] = final_counts['image_id'].str[-1]
 
-    final_counts['final_count'] = final_counts.apply(lambda x: x['yolo_count_max'] if x['yolo_count_max'] < x['md_count_max'] else x['md_count_max'], axis = 1)
 
-    final_counts['final_bbox'] = final_counts.apply(lambda x: x['yolo_bbox'] if x['yolo_count_max'] < x['md_count_max'] else x['md_bbox'], axis = 1)
+    event_id_group = []
+    md_count_max_group = []
+    yolo_count_max_group = []
 
-    final_counts = final_counts.rename(columns = {'event_id': 'image_group_id'})
+    md_bbox_group = []
+    yolo_bbox_group = []
 
-    return final_counts[['image_group_id', 'image_id', 'final_count', 'final_bbox']]
+    for group, values in final_counts.groupby(['event_id', 'md_count_max', 'yolo_count_max']):
+
+        event_id_group.append(group[0])
+        md_count_max_group.append(group[1])
+        yolo_count_max_group.append(group[2])
+
+        md_bbox_dict = {}
+        yolo_bbox_dict = {}
+
+        for image, md, yolo in zip(list(values['image_id_appendix']), list(values['md_bbox']), list(values['yolo_bbox'])):
+            md_bbox_dict[image] = md
+            yolo_bbox_dict[image] = yolo
+
+
+        md_bbox_group.append(md_bbox_dict)
+        yolo_bbox_group.append(yolo_bbox_dict)
+
+    final_counts_bboxes = pd.DataFrame({'event_id': event_id_group,
+                   'md_count_max': md_count_max_group,
+                  'yolo_count_max': yolo_count_max_group,
+                  'md_bbox': md_bbox_group,
+                 'yolo_bbox': yolo_bbox_group})
+    final_counts_bboxes = final_counts_bboxes.rename(columns = {'event_id': 'image_group_id'})
+    return final_counts_bboxes
 
 
 
 def run_ensemble_stage_3():
 
-    ground_truth = load_ground_truth()
-    megadetector = load_megadetector_output()
-    yolov5 = load_yolo_output()
-    final_counts = merge_md_yolo(yolov5, megadetector)
+    #ground_truth = load_ground_truth()
+    megadetector = load_megadetector_output(foldername, filename)
+    yolov5 = load_yolo_output(foldername, filename)
+    final_counts_bboxes = merge_md_yolo(yolov5, megadetector)
 
-    return final_counts
+    return final_counts_bboxes
