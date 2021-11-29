@@ -26,7 +26,7 @@ def getDictFromDf(df):
         conv_response['animalcount'] = row['count']
         conv_response['animaltype'] = row['species_name']
         conv_response['animaltype2'] = row['species_name']
-        if (conv_response['blank_image'].lower() == 'true'):
+        if (row['blank_image'] == True):
             conv_response['animaltype'] = "Blank"
             conv_response['animaltype2'] = "Blank"
         conv_response['event_id'] = row['event_id']
