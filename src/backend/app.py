@@ -15,7 +15,7 @@ app.config["DEBUG"] = True
 
 @app.route('/', methods=['GET'])
 def home():
-    return '''<h1>Project WI</h1>'''
+    return '''<h1>Project Wisconsin Trails</h1>'''
 
 def getDictFromDf(df):
     # assumes one row in the df
@@ -68,4 +68,5 @@ def annotate():
     return jsonify("{'message' : 'success'}")
 
 
-app.run()
+if __name__ == '__main__':
+    app.run(debug=True,host='0.0.0.0')
