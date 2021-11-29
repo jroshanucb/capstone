@@ -96,9 +96,23 @@ def merge_species_conf_dict_top3(x, y, z):
 def get_topk(x, k):
   """
   get top k entries in dictionary according to confidence score
+  if blanks are in the dictionary, modify to remove blank if more than 1 class available
   """
-  topk_event_dict = {}
-  top_ind = sorted(x, key=x.get, reverse=True)[:k]
+  if 'blank' in x and len(x) >= 2:
+    temp_dict = x.copy()
+    del temp_dict['blank']
+    topk_event_dict = {}
+    top_ind = sorted(temp_dict, key=temp_dict.get, reverse=True)[:k]
+
+    # conf_scores = {}
+    # for i in top_ind:
+    #   conf_scores[i] = max(x[i])
+    # conf_scores['blank'] = str(0.99)
+
+  else:
+    topk_event_dict = {}
+    top_ind = sorted(x, key=x.get, reverse=True)[:k]
+
   conf_scores = {}
   for i in top_ind:
     conf_scores[i] = max(x[i])
