@@ -51,17 +51,17 @@ model_1_df = run_format_yolo(img_directory, 'yolov5l_best_blank.pt', stage_1_lab
                                                     run_blur = False)
 
 #Model 2: Effnet Blank
-model_2_path = '../results/JSON_txt_outputs/phase1_efficientnetb0_classifications_yolosplits_4-1.json'
-model_2_df = run_format_effnet(model_2_path, stage_1_labels, 2)
+model_2_weights_path = 'efficientnetb0_50epochs_finetuned_model_yolosplits3_blanks.pt'
+model_2_df = run_format_effnet(img_directory, model_2_weights_path, stage_1_labels, 2)
+
 
 #Model 3: Yolo Species
 model_3_df = run_format_yolo(img_directory, 'yolov5x_splits4_best.pt', stage_2_yolo_labels, 3,
                                                 run_blur = True)
 
 #Model 4: Effnet Species
-model_4_path = '../results/JSON_txt_outputs/phase2_efficientnetb5_yolo_splits4-1_classifications_basePlusblanks.json'
-model_4_df = run_format_effnet(model_4_path, stage_2_effnet_labels, 4)
-#effnet_df.to_csv('effnet_df.csv', index = False)
+model_4_weights_path = 'efficientnetb5_100epochs_finetuned_model_yolosplits4_BasePlusBlank.pt'
+model_4_df = run_format_effnet(img_directory, model_4_weights_path, stage_2_effnet_labels, 4)
 
 #Model 5: Megadetector
 model_5_path = '../results/JSON_txt_outputs/phase2_megadetector_classifications_yolosplits_4-1_YOLO.json'

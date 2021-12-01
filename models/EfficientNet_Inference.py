@@ -1,5 +1,9 @@
-!pip install timm
-!pip install efficientnet_pytorch
+
+#Dependencies
+#! pip install timm
+#! pip install efficientnet_pytorch
+from __future__ import print_function
+from __future__ import division
 
 import os
 import pandas as pd
@@ -8,8 +12,7 @@ tqdm().pandas()
 import shutil
 
 
-from __future__ import print_function
-from __future__ import division
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -28,6 +31,10 @@ from pathlib import Path
 from efficientnet_pytorch import EfficientNet
 import timm
 
+def set_parameter_requires_grad(model, feature_extracting):
+    if feature_extracting:
+        for param in model.parameters():
+            param.requires_grad = False
 
 def initialize_model(model_name, num_classes, feature_extract, use_pretrained=True):
     # Initialize these variables which will be set in this if statement. Each of these
@@ -168,9 +175,13 @@ def perform_inference_batch(img_dir, phase, weights_path):
         model_name = "efficientnetb5"
     else:
         print("Invalid phase number. Use either 1 or 2. Exiting...")
-        break
+        return
 
-    checkpoint = torch.load(Path(weights_path))
+
+    if str(torch.device("cuda:0" if torch.cuda.is_available() else "cpu")) == 'cpu':
+        checkpoint = torch.load(Path(weights_path), map_location=torch.device('cpu'))
+    else:
+        checkpoint = torch.load(Path(weights_path))
     model_ft, input_size = initialize_model(model_name, num_classes, feature_extract=False, use_pretrained=False) #change True/False
     model_ft.load_state_dict(checkpoint)
     model_ft.eval()
@@ -179,49 +190,63 @@ def perform_inference_batch(img_dir, phase, weights_path):
 
     with torch.no_grad():
         with tqdm(total = len(img_dir)) as pbar:
-            for image in img_dir:
-                pbar.set_description("processing {}".format(image))
-                image_inst = Image.open(Path(image)).convert('RGB')
-                input = data_transforms['val'](image_inst).to(device)
-                input.unsqueeze_(0)
+            image_iteration = 1
+            for image in os.listdir(img_dir):
+                if image[-4:] == '.jpg' or image[-4:] == 'jpeg':
+                    if image_iteration == 1:
+                        print("Initiating Inference")
+                    elif image_iteration % 100 == 0:
+                        print("{} images done.".format(image_iteration))
+                    pbar.set_description("processing {}".format(image))
+                    image_inst = Image.open(img_dir + image).convert('RGB')
+                    input = data_transforms['val'](image_inst).to(device)
+                    input.unsqueeze_(0)
 
-                model_ft.to(device)
-                output = model_ft(input)
+                    model_ft.to(device)
+                    output = model_ft(input)
 
-                ### use calibrated logits via temperature scaling
-                output = torch.div(output, temperature)
+                    ### use calibrated logits via temperature scaling
+                    output = torch.div(output, temperature)
 
-                ## top5 pred
-                sm = nn.Softmax(dim=1)
-                probabilities = sm(output)
+                    ## top5 pred
+                    sm = nn.Softmax(dim=1)
+                    probabilities = sm(output)
 
-                top_5_conf, i = output.topk(k)
-                prob, idx = probabilities.topk(k)
+                    top_5_conf, i = output.topk(k)
+                    prob, idx = probabilities.topk(k)
 
-                dict_preds = {}
-                itr = 0
-                for x in i.cpu().numpy()[0]:
-                  if x in dict_preds:
-                    dict_preds[int(x)].append(float(prob.cpu().detach().numpy()[0][itr]))
-                  else:
-                    dict_preds[int(x)] = [float(prob.cpu().detach().numpy()[0][itr])]
-                  itr += 1
+                    dict_preds = {}
+                    itr = 0
+                    for x in i.cpu().numpy()[0]:
+                      if x in dict_preds:
+                        dict_preds[int(x)].append(float(prob.cpu().detach().numpy()[0][itr]))
+                      else:
+                        dict_preds[int(x)] = [float(prob.cpu().detach().numpy()[0][itr])]
+                      itr += 1
 
-                best_class = max(dict_preds, key=dict_preds.get)
-                species_name = class_names[best_class]
-                confidence_score = dict_preds[best_class]
+                    best_class = max(dict_preds, key=dict_preds.get)
+                    species_name = class_names[best_class]
+                    confidence_score = dict_preds[best_class]
 
-                classification = {
-                      "id": image,
-                      "class": int(best_class),
-                      "class_name": species_name,
-                      "conf": float(confidence_score[0]),
-                      "conf_dict": dict_preds
-                  }
+                    classification = {
+                          "id": image,
+                          "class": int(best_class),
+                          "class_name": species_name,
+                          "conf": float(confidence_score[0]),
+                          "conf_dict": dict_preds
+                      }
 
-                classifications.append(classification)
-                pbar.update(1)
+                    classifications.append(classification)
+                    pbar.update(1)
+
+                    image_iteration+= 1
 
     output_json = {'phase{}_classification_results'.format(phase): classifications}
 
     return output_json
+
+img_directory = '/Users/sleung2/Documents/MIDS Program/Capstone_local/snapshot_wisconsin/all/yolo_splits4.2/test/images/'
+phase = 1
+weights_path = 'efficientnetb0_50epochs_finetuned_model_yolosplits3_blanks.pt'
+
+perform_inference_batch(img_directory, phase, weights_path)
