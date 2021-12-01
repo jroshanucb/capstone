@@ -22,12 +22,14 @@ import { FormsModule } from '@angular/forms';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 import { TeamsComponent } from './teams/teams.component';
+import { HomeComponent } from './home/home.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     LandingComponent,
-    TeamsComponent
+    TeamsComponent,
+    HomeComponent
   ],
   imports: [
     BrowserModule,
