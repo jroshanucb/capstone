@@ -9,7 +9,7 @@
 
 #Megadetector
 #pip uninstall tensorflow
-tensorflow-gpu==1.13.1 humanfriendly jsonpickle
+pip install tensorflow-gpu==1.13.1 humanfriendly jsonpickle
 #wget -O /content/megadetector_v4_1_0.pb https://lilablobssc.blob.core.windows.net/models/camera_traps/megadetector/md_v4.1.0/md_v4.1.0.pb
 
 #git clone https://github.com/microsoft/CameraTraps

@@ -10,8 +10,8 @@ import pandas as pd
 import numpy as np
 import json
 
-from tqdm.notebook import tqdm
-tqdm().pandas()
+#from tqdm.notebook import tqdm
+#tqdm().pandas()
 import shutil
 
 
@@ -156,7 +156,7 @@ def perform_inference_batch(device, img_dir, phase, weights_path, data_transform
     classifications = []
 
     with torch.no_grad():
-        with tqdm(total = len(img_dir)) as pbar:
+        #with tqdm(total = len(img_dir)) as pbar:
             image_iteration = 1
             for image in os.listdir(img_dir):
                 if image[-4:] == '.jpg' or image[-4:] == 'jpeg':
@@ -164,7 +164,7 @@ def perform_inference_batch(device, img_dir, phase, weights_path, data_transform
                         print("Initiating Inference")
                     elif image_iteration % 100 == 0:
                         print("{} images done.".format(image_iteration))
-                    pbar.set_description("processing {}".format(image))
+#                    pbar.set_description("processing {}".format(image))
                     image_inst = Image.open(img_dir + image).convert('RGB')
                     input = data_transforms['val'](image_inst).to(device)
                     input.unsqueeze_(0)
@@ -204,7 +204,7 @@ def perform_inference_batch(device, img_dir, phase, weights_path, data_transform
                       }
 
                     classifications.append(classification)
-                    pbar.update(1)
+#                    pbar.update(1)
 
                     image_iteration+= 1
 
@@ -416,8 +416,8 @@ def run_format_effnet(img_directory, weights_path, labels, model_id):
     elif model_id == 4:
         phase = 2
 
-    run_effnet_inference(img_directory, phase, weights_path, input_size = 329)
-    stage2_effnet_dict = load_effnet_json(json_path, model_id, labels)
+    output_json = run_effnet_inference(img_directory, phase, weights_path, input_size = 329)
+    stage2_effnet_dict = load_effnet_json(output_json, model_id, labels)
     stage2_formatted_effnet = format_effnet(stage2_effnet_dict, model_id)
 
     return stage2_formatted_effnet
