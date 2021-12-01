@@ -29,8 +29,8 @@ def img_name_to_event(img):
 def yolo_inference(img_directory, weights_path):
 
     # Model
-    model = torch.hub.load('ultralytics/yolov5', 'custom', path=weights_path,
-    force_reload=True)
+    model = torch.hub.load('/home/ubuntu/capstone_local/yolov5', 'custom', path=weights_path,
+    force_reload=True, source = 'local')
 
     #Images
     imgs = []
