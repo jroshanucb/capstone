@@ -43,7 +43,7 @@ path= weights_path, force_reload=True)
             img_names.append(img_name)
 
 
-    batch_size = 500
+    batch_size = 1000
     num_images = len(img_names)
     num_batches = int(math.ceil(num_images/batch_size))
 
@@ -51,7 +51,7 @@ path= weights_path, force_reload=True)
     # Inference in batches
 
     first_batch = True
-    for batch_num in range(1, 3):#num_batches+1):
+    for batch_num in range(1, num_batches+1):
         img_batch = imgs[(batch_size*(batch_num - 1)) :(batch_size*batch_num)]
         print('Running batch {}, {} images.'.format(batch_num, len(img_batch)))
 
