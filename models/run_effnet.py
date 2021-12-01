@@ -162,7 +162,7 @@ def perform_inference_batch(device, img_dir, phase, weights_path, data_transform
                 if image[-4:] == '.jpg' or image[-4:] == 'jpeg':
                     if image_iteration == 1:
                         print("Initiating Inference")
-                    elif image_iteration % 100 == 0:
+                    elif image_iteration % 500 == 0:
                         print("{} images done.".format(image_iteration))
 #                    pbar.set_description("processing {}".format(image))
                     image_inst = Image.open(img_dir + image).convert('RGB')
