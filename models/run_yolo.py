@@ -60,7 +60,7 @@ path= weights_path, force_reload=True)
         #Combine results from all rows of batch into single pandas df
         first_row = True
         for tensor,image_name in zip(results.xyxy, img_names):
-            int_results_df = pd.DataFrame(np.array(tensor))
+            int_results_df = pd.DataFrame(np.array(tensor.cpu()))
 
             int_results_df['image_name'] = image_name
 
