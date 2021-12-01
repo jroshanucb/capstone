@@ -1,0 +1,19 @@
+# pip install -r requirements.txt
+
+#Yolo
+#https://raw.githubusercontent.com/ultralytics/yolov5/master/requirements.txt
+
+#efficientnet
+#timm
+#efficientnet_pytorch
+
+#Megadetector
+#pip uninstall tensorflow
+tensorflow-gpu==1.13.1 humanfriendly jsonpickle
+#wget -O /content/megadetector_v4_1_0.pb https://lilablobssc.blob.core.windows.net/models/camera_traps/megadetector/md_v4.1.0/md_v4.1.0.pb
+
+#git clone https://github.com/microsoft/CameraTraps
+#git clone https://github.com/microsoft/ai4eutils
+#cp /content/CameraTraps/detection/run_tf_detector_batch.py .
+#cp /content/CameraTraps/visualization/visualize_detector_output.py .
+#cp /content/CameraTraps/detection/run_tf_detector.py .
