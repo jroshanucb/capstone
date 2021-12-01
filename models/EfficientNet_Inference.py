@@ -25,24 +25,9 @@ print("Torchvision Version: ",torchvision.__version__)
 
 from PIL import Image
 from pathlib import Path
-
-
-# Number of classes in the dataset
-num_classes = 11
-
-# Batch size for training (change depending on how much memory you have)
-batch_size = 8
-
-# Flag for feature extracting. When False, we finetune the whole model,
-#   when True we only update the reshaped layer params
-feature_extract = True
-
-
-
 from efficientnet_pytorch import EfficientNet
 import timm
-## https://discuss.pytorch.org/t/resnet-last-layer-modification/33530
-## https://discuss.pytorch.org/t/how-the-pytorch-freeze-network-in-some-layers-only-the-rest-of-the-training/7088
+
 
 def initialize_model(model_name, num_classes, feature_extract, use_pretrained=True):
     # Initialize these variables which will be set in this if statement. Each of these
@@ -74,14 +59,6 @@ def initialize_model(model_name, num_classes, feature_extract, use_pretrained=Tr
       #model_ft._fc = nn.Sequential(nn.Linear(num_ftrs, num_classes))
 
       model_ft._fc = nn.Linear(num_ftrs, num_classes)
-
-      ### train/val vs test are from different distributions
-      ### https://discuss.pytorch.org/t/model-eval-gives-incorrect-loss-for-model-with-batchnorm-layers/7561/39
-      ### https://discuss.pytorch.org/t/performance-highly-degraded-when-eval-is-activated-in-the-test-phase/3323/16
-      # for m in model_ft.modules():
-      #     if isinstance(m, nn.BatchNorm2d):
-      #       m.track_running_stats=False
-
       input_size = 224
 
     else:
@@ -119,43 +96,14 @@ data_transforms = {
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-"""
- If feature_extract = False, the model is finetuned and all model parameters are updated.
- If feature_extract = True, only the last layer parameters are updated, the others remain fixed.
-
- In finetuning, we start with a pretrained model and update all of the model’s parameters for our new task, in essence retraining the whole model.
-    feature_extract = False
-    use_pretrained = True
- In feature extraction, we start with a pretrained model and only update the final layer weights from which we derive predictions.
-    feature_extract = True
-    use_pretrained = True
- Train from scratch:
-    feature_extract = False
-    use_pretrained = False
-"""
-
-
-class_names = ['bear',
- 'blank',
- 'cottontail_snowshoehare',
- 'coyote',
- 'deer',
- 'elk',
- 'foxgray_foxred',
- 'opossum',
- 'raccoon',
- 'turkey',
- 'wolf']
 
 
 ## load model weights
-checkpoint = torch.load(Path('/content/gdrive/My Drive/Colab Notebooks/w210_capstone/yolo_splits_torch_model_runs/efficientnetb5_100epochs_finetuned_model_yolosplits4_BasePlusBlank'))
-model_name = 'efficientnetb5'
-model_ft, input_size = initialize_model(model_name, num_classes, feature_extract, use_pretrained=False) #change True/False
-model_ft.load_state_dict(checkpoint)
-model_ft.eval()
+"""
+weights_path = 'efficientnetb5_100epochs_finetuned_model_yolosplits4_BasePlusBlank'
+weights_path = 'efficientnetb0_50epochs_finetuned_model_yolosplits3_blanks'
+"""
 
-# image_path = ''
 
 def perform_inference_single_image(img_path):
 
@@ -202,9 +150,31 @@ def perform_inference_single_image(img_path):
 
     return classification
 
-### batch inference for directory of images
+## batch inference for directory of images
+def perform_inference_batch(img_dir, phase, weights_path):
 
-def perform_inference_batch(img_dir):
+    if phase == 1:
+        k = 2
+        temperature = 1
+        num_classes = 2
+        class_names = ['animal', 'blank']
+        model_name = "efficientnetb0"
+
+    elif phase == 2:
+        k = 5
+        temperature = 1.392
+        num_classes = 11
+        class_names = ['bear', 'blank', 'cottontail_snowshoehare', 'coyote', 'deer', 'elk', 'foxgray_foxred', 'opossum', 'raccoon', 'turkey', 'wolf']
+        model_name = "efficientnetb5"
+    else:
+        print("Invalid phase number. Use either 1 or 2. Exiting...")
+        break
+
+    checkpoint = torch.load(Path(weights_path))
+    model_ft, input_size = initialize_model(model_name, num_classes, feature_extract=False, use_pretrained=False) #change True/False
+    model_ft.load_state_dict(checkpoint)
+    model_ft.eval()
+
     classifications = []
 
     with torch.no_grad():
@@ -219,15 +189,14 @@ def perform_inference_batch(img_dir):
                 output = model_ft(input)
 
                 ### use calibrated logits via temperature scaling
-                temperature = 1.392
                 output = torch.div(output, temperature)
 
                 ## top5 pred
                 sm = nn.Softmax(dim=1)
                 probabilities = sm(output)
 
-                top_5_conf, i = output.topk(5)
-                prob, idx = probabilities.topk(5)
+                top_5_conf, i = output.topk(k)
+                prob, idx = probabilities.topk(k)
 
                 dict_preds = {}
                 itr = 0
@@ -253,4 +222,6 @@ def perform_inference_batch(img_dir):
                 classifications.append(classification)
                 pbar.update(1)
 
-    return classifications
+    output_json = {'phase{}_classification_results'.format(phase): classifications}
+
+    return output_json

@@ -50,19 +50,98 @@ output format:
   }
 """
 
-def create_species_conf_dict(x, y):
+def create_species_conf_dict(x, y, model):
   """
   zip class predictions and confidence scores together into a dictionary
   at the image level
+
+  model 3 does not have sorted confidence scores
+  model 3 can also have classes appear more than once per image
   """
-  if isinstance(x, float):
-    species_list = ['blank']
-    conf_list = [str(0.99)]
-    return dict(zip(species_list, conf_list))
+  if model == 3:
+    new_dictionary = {}
+
+    if isinstance(x, float):
+      species_list = ['blank']
+      conf_list = [str(0.99)]
+    else:
+      species_list = list(x.split(","))
+      conf_list = list(y.split(","))
+
+    new_dictionary = {}
+    for key, value in zip(species_list, conf_list):
+      if key in new_dictionary:
+        new_dictionary[key].append(value)
+      else:
+        new_dictionary[key] = [value]
+
+    ## sort dictionary in descending order according to value
+    intermed_dict = {}
+    for key, value in new_dictionary.items():
+      intermed_dict[key] = sorted(value, reverse=True)
+
+    ## trigger turns on if there are classes with multiple appearances
+
+    trigger = ''
+    if len(new_dictionary) >= 2:
+      for key, value in new_dictionary.items():
+        if len(value) > 1:
+          trigger = 1
+        else:
+          continue
+
+    if trigger:
+      ## if there are multiple classes with multiple appearances and are tied in length
+      ## we need a tie-breaker...default to class with higher max confidence
+      ## python's max function defaults to first encounter for tie-breaker...not good enough for us
+
+      ## collect the length of all lists in dictionary
+      lists_length = []
+      for key, value in new_dictionary.items():
+        lists_length.append(len(value))
+
+      lists_length = sorted(lists_length, reverse=True)
+
+      ## since the list is already sorted, we can just check if the first two lists are equal
+      ## if equal, then there is a tie
+      tie = ''
+      if lists_length[0] == lists_length[1]:
+        tie = 1
+
+      ## if there is a tie, then take the max conf score
+      if tie:
+        int_dict = {}
+        for key, value in new_dictionary.items():
+          if len(value) > 1:
+            int_dict[key] = max(value)
+
+        best_class = sorted(int_dict, key=int_dict.get, reverse=True)[:1][0]
+        max_conf = int_dict[best_class]
+        output_dict = {best_class: max_conf}
+
+      else:
+        ## default to class with most appearances
+        best_class = max(intermed_dict, key= lambda x: len(set(intermed_dict[x])))
+        max_conf = max(intermed_dict[best_class])
+        output_dict = {best_class: max_conf}
+    else:
+      ## default to class with highest confidence score
+      best_class = sorted(intermed_dict, key=intermed_dict.get, reverse=True)[:1]
+      max_conf = max(intermed_dict[best_class[0]])
+      output_dict = {best_class[0]: max_conf}
+
+    return output_dict
+
   else:
-    species_list = list(x.split(","))
-    conf_list = list(y.split(","))
-    return dict(zip(species_list, conf_list))
+  ## works with sorted confidence scores, modelid = 4
+    if isinstance(x, float):
+      species_list = ['blank']
+      conf_list = [str(0.99)]
+      return dict(zip(species_list, conf_list))
+    else:
+      species_list = list(x.split(","))
+      conf_list = list(y.split(","))
+      return dict(zip(species_list, conf_list))
 
 
 def merge_species_conf_dict_top3(x, y, z):
@@ -244,7 +323,7 @@ def output_final_pred_species(x):
     max_class = max(temp_dict, key=x.get)
     max_conf = temp_dict[max_class]
 
-    ## set a threshold of 0.3
+    ## set a threshold of 0.5
     if max_conf <= 0.5:
       ## defer to blank...use original dictionary
       intermed_dict = {key: float(value) for key, value in x.items()}
@@ -280,13 +359,13 @@ def run_ensemble_stage_2():
     df_model_id3 = sample_input[sample_input.model_id == 3]
     df_model_id4 = sample_input[sample_input.model_id == 4]
 
-    df_model_id3['img1_species_conf_dict'] = df_model_id3.apply(lambda x: create_species_conf_dict(x.image_id_1_species_name, x.image_id_1_conf), axis=1)
-    df_model_id3['img2_species_conf_dict'] = df_model_id3.apply(lambda x: create_species_conf_dict(x.image_id_2_species_name, x.image_id_2_conf), axis=1)
-    df_model_id3['img3_species_conf_dict'] = df_model_id3.apply(lambda x: create_species_conf_dict(x.image_id_3_species_name, x.image_id_3_conf), axis=1)
+    df_model_id3['img1_species_conf_dict'] = df_model_id3.apply(lambda x: create_species_conf_dict(x.image_id_1_species_name, x.image_id_1_conf, x.model_id), axis=1)
+    df_model_id3['img2_species_conf_dict'] = df_model_id3.apply(lambda x: create_species_conf_dict(x.image_id_2_species_name, x.image_id_2_conf, x.model_id), axis=1)
+    df_model_id3['img3_species_conf_dict'] = df_model_id3.apply(lambda x: create_species_conf_dict(x.image_id_3_species_name, x.image_id_3_conf, x.model_id), axis=1)
 
-    df_model_id4['img1_species_conf_dict'] = df_model_id4.apply(lambda x: create_species_conf_dict(x.image_id_1_species_name, x.image_id_1_conf), axis=1)
-    df_model_id4['img2_species_conf_dict'] = df_model_id4.apply(lambda x: create_species_conf_dict(x.image_id_2_species_name, x.image_id_2_conf), axis=1)
-    df_model_id4['img3_species_conf_dict'] = df_model_id4.apply(lambda x: create_species_conf_dict(x.image_id_3_species_name, x.image_id_3_conf), axis=1)
+    df_model_id4['img1_species_conf_dict'] = df_model_id4.apply(lambda x: create_species_conf_dict(x.image_id_1_species_name, x.image_id_1_conf, x.model_id), axis=1)
+    df_model_id4['img2_species_conf_dict'] = df_model_id4.apply(lambda x: create_species_conf_dict(x.image_id_2_species_name, x.image_id_2_conf, x.model_id), axis=1)
+    df_model_id4['img3_species_conf_dict'] = df_model_id4.apply(lambda x: create_species_conf_dict(x.image_id_3_species_name, x.image_id_3_conf, x.model_id), axis=1)
 
 
     df_model_id3['consol_dict'] = df_model_id3.apply(lambda x: merge_species_conf_dict_top3(x.img1_species_conf_dict, x.img2_species_conf_dict, x.img3_species_conf_dict), axis=1)
@@ -302,16 +381,16 @@ def run_ensemble_stage_2():
     merge model_id3 and model_id4 at the event level
     the final prediction dictionaries from both models can be on the same row
     """
-    df_merge = pd.merge(df_model_id3, df_model_id4, how='inner', on="image_group_id", suffixes=('_3', '_4'))
-    df_merge = df_merge[['image_group_id', 'top_pred_3', 'top3_dict_3', 'top_pred_4', 'top3_dict_4']]
+    df_merge = pd.merge(df_model_id3, df_model_id4, how='inner', on="image_group_id", suffixes=('_model_3', '_model_4'))
+    df_merge = df_merge[['image_group_id', 'consol_dict_model_3', 'top_pred_model_3', 'top3_dict_model_3', 'consol_dict_model_4', 'top_pred_model_4', 'top3_dict_model_4']]
     #df_merge.head()
 
-    df_merge['topk_conf_3_scaled'] = df_merge.apply(lambda x: scale_model_id3(x.top3_dict_3), axis=1)
-    df_merge['topk_conf_4_scaled'] = df_merge.apply(lambda x: scale_model_id4(x.top3_dict_4), axis=1)
+    df_merge['topk_conf_3_scaled'] = df_merge.apply(lambda x: scale_model_id3(x.top3_dict_model_3), axis=1)
+    df_merge['topk_conf_4_scaled'] = df_merge.apply(lambda x: scale_model_id4(x.top3_dict_model_4), axis=1)
 
     df_merge['event_final_topk_conf'] = df_merge.apply(lambda x: get_final_topk(combine_topk_conf(x.topk_conf_3_scaled, x.topk_conf_4_scaled),3), axis=1)
     df_merge['event_final_pred'] = df_merge.apply(lambda x: output_final_pred_species(x.event_final_topk_conf), axis=1)
     df_merge['event_final_pred_conf'] = df_merge.apply(lambda x: output_final_pred_conf(x.event_final_pred, x.event_final_topk_conf), axis=1)
 
     #df_merge.to_csv('../results/merged_stage_2_pred_conf.csv', index = False)
-    return df_merge[['image_group_id','event_final_topk_conf', 'event_final_pred']]
+    return df_merge[['image_group_id','consol_dict_model_3', 'consol_dict_model_4', 'event_final_topk_conf', 'event_final_pred']]

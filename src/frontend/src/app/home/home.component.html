@@ -1,0 +1,323 @@
+<style>
+
+
+
+    .flex-container {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: center;
+        padding-top: 20px;
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+
+    .container123 {
+        display: flex;
+        flex-flow: row;
+        justify-content: center;
+    }
+
+    .leftcontainer {
+        display: flex;
+        flex-basis: 50%;
+        justify-content: flex-end;
+
+    }
+
+    .rightcontainter {
+        padding-left: 20px;
+        flex-basis: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+
+    }
+
+    .imagecontainer {
+        display: flex;
+        width: 50vw;
+
+    }
+
+    .images {
+        display: flex;
+        width: 90vw;
+    }
+
+    .verticalradiogroup {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .example-spacer {
+        flex: 1 1 auto;
+    }
+
+    .mat-toolbar h4 {
+        font-style: normal;
+        font-variant-ligatures: normal;
+        font-variant-caps: normal;
+        font-variant-numeric: normal;
+        font-variant-east-asian: normal;
+        font-weight: 100;
+        font-stretch: normal;
+        font-weight: bold;
+        font-size: 16px;
+        line-height: 32px;
+        font-family: Roboto, "Helvetica Neue", sans-serif;
+    }
+
+
+    .panel {
+        position: relative;
+        background-size: 800px;
+        background-position: center;
+        background-repeat: no-repeat;
+        height: 85vh;
+        border-radius: 5px;
+        color: #ffffff;
+        cursor: pointer;
+        flex: .5;
+        margin: 10px;
+        transition: all 700ms ease;
+    }
+
+
+    .panel.active {
+        flex: 5;
+    }
+
+    .subright {
+        width: 300px;
+        padding-top: 44px;
+    }
+
+    .buttonsection {
+        display: flex;
+        flex-flow: row wrap;
+        padding: 20px;
+        justify-content: center;
+        grid-gap: 25px;
+    }
+
+    .countsection {
+        padding-top: 20px;
+    }
+
+    .mat-slider-horizontal {
+        width: 100%;
+    }
+
+    .mat-toolbar {
+        background: #0076a5;
+        color: white;
+    }
+
+    .leftleftcontainer {
+        display: flex;
+        flex-direction: column;
+        padding-right: 20px;
+        align-items: flex-end;
+    }
+
+    mat-slide-toggle {
+        padding-right: 10px;
+    }
+
+    .mat-slide-toggle.mat-checked .mat-slide-toggle-bar {
+        background-color: rgb(170 235 168);
+    }
+
+    .mat-slide-toggle.mat-checked .mat-slide-toggle-thumb {
+        background-color: #42b36a;
+    }
+
+    .btn {
+        border: none;
+        outline: none;
+        padding: 5px 5px;
+        background-color: #f1f1f1;
+        cursor: pointer;
+        font-size: 18px;
+        width: 150px;
+        margin-bottom: 5px;
+    }
+
+    /* Style the active class, and buttons on mouse-over */
+    .active,
+    .btn:hover {
+        background-color: #666;
+        color: white;
+    }
+
+    #myDIV {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .firstcolumn {
+        display: flex;
+        flex-direction: column;
+        margin-right: 5px;
+    }
+    a{
+        color:white
+    }
+    .customtext{
+        font-family: "Open Sans", sans-serif;
+        color: #444444;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        text-align:justify;
+    }
+.fixed-top {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 1030;
+}
+</style>
+
+<p>
+    <mat-toolbar class="fixed-top">
+        <span>Wisconsin Trails</span>
+        <span class="example-spacer"></span>
+        <span><h4>Home&nbsp;&nbsp;&nbsp;</h4></span>
+        <span><h4><a href="/annotate" style="text-decoration: none;">Annotate</a> &nbsp;&nbsp;&nbsp;</h4></span>
+        <span><h4><a href="/teams" style="text-decoration: none;">Team</a>&nbsp;&nbsp;&nbsp;</h4></span>
+    </mat-toolbar>
+</p>
+
+
+<section id="hero" class="d-flex flex-column justify-content-end align-items-center" style="margin-top: -12px;">
+    <div id="heroCarousel" class="container carousel carousel-fade" data-ride="carousel">
+      <div class="carousel-item active">
+        <div class="carousel-container">
+          <h2 class="animate__animated animate__fadeInDown">Welcome to <span>CAMinos</span></h2>
+          <p class="animate__animated fanimate__adeInUp">A companion tool for Snapshot Wisconsin</p>
+          <a href="/home/#about" class="btn-get-started animate__animated animate__fadeInUp scrollto">Learn More</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<section id="about" class="about">
+    <div class="container" style="max-width: 920px;">
+
+      <div class="section-title aos-init aos-animate" data-aos="zoom-out">
+        <h2>About</h2>
+        <p>Our Project</p>
+      </div>
+
+      <div class="row content aos-init aos-animate" data-aos="fade-up">
+        <div class="col-lg-6">
+          <p class="customtext">
+            Snapshot Wisconsin is an effort led by Wisconsin’s Department of Natural Resources to maintain a statewide network of trail cameras, monitor wildlife year-round, and support decisions regarding wildlife conservation and management. However, images captured from trail cameras are outsourced to the public and are manually annotated by volunteers. Caminos uses machine learning to enable automated species classification on camera trap images, facilitating faster annotations and fueling public conservation efforts.
+
+            
+          </p>
+          <p class="customtext">
+            Wisconsin’s Department of Natural Resources maintains a statewide network of trail cameras to monitor wildlife year-round through their project Snapshot Wisconsin, supporting decisions regarding wildlife conservation and management. This network consists of thousands of cameras taking millions of pictures per year. Researchers and volunteers manually annotate both the species and number of animals to help convert these raw images into actionable insights. Caminos applies computer vision to these trail camera images to automate this process. Our deep learning system predicts both the animal species and the count of animals caught on trail camera images using an ensemble approach that consists of both object detection and classification algorithms. These predictions are then supplied as recommendations to users as they annotate images in our custom-built annotation tool. This streamlines the annotation process for users, resulting in much faster annotation times, fueling research on biodiversity and wildlife conservation.
+          </p>
+        </div>
+        <div class="col-lg-6 pt-4 pt-lg-0">
+          
+          <!-- <a href="#features" class="btn-learn-more">Learn More</a> -->
+          <img src="/assets/images/snapshot-logo-9.jpeg" alt="">
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="about" class="about">
+    <div class="container" style="max-width: 920px;">
+
+      <div class="section-title aos-init aos-animate" data-aos="zoom-out">
+        <h2>About</h2>
+        <p>Our Project</p>
+      </div>
+
+      <div class="row content aos-init aos-animate" data-aos="fade-up">
+        <div class="col-lg-6">
+        <div class="container123">
+          <p class="customtext leftcontainer">
+            Snapshot Wisconsin is an effort led by Wisconsin’s Department of Natural Resources to maintain a statewide network of trail cameras, monitor wildlife year-round, and support decisions regarding wildlife conservation and management. However, images captured from trail cameras are outsourced to the public and are manually annotated by volunteers. Caminos uses machine learning to enable automated species classification on camera trap images, facilitating faster annotations and fueling public conservation efforts.
+          </p>
+          <p class="customtext rightcontainter">
+            Wisconsin’s Department of Natural Resources maintains a statewide network of trail cameras to monitor wildlife year-round through their project Snapshot Wisconsin, supporting decisions regarding wildlife conservation and management. This network consists of thousands of cameras taking millions of pictures per year. Researchers and volunteers manually annotate both the species and number of animals to help convert these raw images into actionable insights. Caminos applies computer vision to these trail camera images to automate this process. Our deep learning system predicts both the animal species and the count of animals caught on trail camera images using an ensemble approach that consists of both object detection and classification algorithms. These predictions are then supplied as recommendations to users as they annotate images in our custom-built annotation tool. This streamlines the annotation process for users, resulting in much faster annotation times, fueling research on biodiversity and wildlife conservation.
+          </p>
+        </div>
+    </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <section id="about" class="about">
+    <div class="container" style="max-width: 920px;">
+
+      <div class="section-title aos-init aos-animate" data-aos="zoom-out">
+        <h2>About</h2>
+        <p>Our Project</p>
+      </div>
+
+      <div class="row content aos-init aos-animate" data-aos="fade-up">
+        <div class="col-lg-6">
+          <p class="customtext">
+            Snapshot Wisconsin is an effort led by Wisconsin’s Department of Natural Resources to maintain a statewide network of trail cameras, monitor wildlife year-round, and support decisions regarding wildlife conservation and management. However, images captured from trail cameras are outsourced to the public and are manually annotated by volunteers. Caminos uses machine learning to enable automated species classification on camera trap images, facilitating faster annotations and fueling public conservation efforts.
+
+            
+          </p>
+          <p class="customtext">
+            Wisconsin’s Department of Natural Resources maintains a statewide network of trail cameras to monitor wildlife year-round through their project Snapshot Wisconsin, supporting decisions regarding wildlife conservation and management. This network consists of thousands of cameras taking millions of pictures per year. Researchers and volunteers manually annotate both the species and number of animals to help convert these raw images into actionable insights. Caminos applies computer vision to these trail camera images to automate this process. Our deep learning system predicts both the animal species and the count of animals caught on trail camera images using an ensemble approach that consists of both object detection and classification algorithms. These predictions are then supplied as recommendations to users as they annotate images in our custom-built annotation tool. This streamlines the annotation process for users, resulting in much faster annotation times, fueling research on biodiversity and wildlife conservation.
+          </p>
+        </div>
+        <div class="col-lg-6 pt-4 pt-lg-0">
+          
+          <!-- <a href="#features" class="btn-learn-more">Learn More</a> -->
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="about" class="about">
+    <div class="container" style="max-width: 920px;">
+      <div class="section-title aos-init aos-animate" data-aos="zoom-out">
+        <h2>About</h2>
+        <p>Our Project</p>
+      </div>
+
+      <div class="row content aos-init aos-animate" data-aos="fade-up">
+        <div class="col-lg-6">
+          <p class="customtext">
+            Snapshot Wisconsin is an effort led by Wisconsin’s Department of Natural Resources to maintain a statewide network of trail cameras, monitor wildlife year-round, and support decisions regarding wildlife conservation and management. However, images captured from trail cameras are outsourced to the public and are manually annotated by volunteers. Caminos uses machine learning to enable automated species classification on camera trap images, facilitating faster annotations and fueling public conservation efforts.
+
+            
+          </p>
+          <p class="customtext">
+            Wisconsin’s Department of Natural Resources maintains a statewide network of trail cameras to monitor wildlife year-round through their project Snapshot Wisconsin, supporting decisions regarding wildlife conservation and management. This network consists of thousands of cameras taking millions of pictures per year. Researchers and volunteers manually annotate both the species and number of animals to help convert these raw images into actionable insights. Caminos applies computer vision to these trail camera images to automate this process. Our deep learning system predicts both the animal species and the count of animals caught on trail camera images using an ensemble approach that consists of both object detection and classification algorithms. These predictions are then supplied as recommendations to users as they annotate images in our custom-built annotation tool. This streamlines the annotation process for users, resulting in much faster annotation times, fueling research on biodiversity and wildlife conservation.
+          </p>
+        </div>
+        <div class="col-lg-6 pt-4 pt-lg-0">
+          
+          <!-- <a href="#features" class="btn-learn-more">Learn More</a> -->
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+<footer id="footer">
+  <div class="container">
+    <h3>CAMinos</h3>
+    <p>Snapshot Wisconsin.</p>
+  </div>
+  <div class="col-lg-6 pt-4 pt-lg-0">
+    <img src="/assets/images/snapshot-logo-9.jpeg" alt="">
+  </div>
+</footer>
