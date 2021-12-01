@@ -55,7 +55,7 @@ model_2_path = '../results/JSON_txt_outputs/phase1_efficientnetb0_classification
 model_2_df = run_format_effnet(model_2_path, stage_1_labels, 2)
 
 #Model 3: Yolo Species
-model_3_df = run_format_yolo(img_directory, 'yolov5s_best_serengeti_splits4.pt', stage_2_yolo_labels, 3,
+model_3_df = run_format_yolo(img_directory, 'yolov5x_splits4_best.pt', stage_2_yolo_labels, 3,
                                                 run_blur = True)
 
 #Model 4: Effnet Species
@@ -78,5 +78,14 @@ full_model_output = pd.concat([model_1_df,
 now = datetime.now() # current date and time
 date_string = now.strftime("%m/%d/%Y")
 full_model_output['load_date'] = date_string
+
+#Reorder columns- model id to front
+cols = list(full_model_output)
+cols.insert(0, cols.pop(cols.index('model_id')))
+# use loc to reorder
+full_model_output = full_model_output.loc[:, cols]
+
+#Sequential Output IDs
+full_model_output.insert(0, 'Model_Output_ID', range(0, len(full_model_output)))
 
 full_model_output.to_csv('full_model_output.csv', index = False)

@@ -34,14 +34,15 @@ def yolo_inference(img_directory, weights_path):
     imgs = []
     img_names = []
 
-    i = 1
+#    i = 1
     for img_name in os.listdir(img_directory):
-        if i == 5:
-            break
-        img = cv2.imread(img_directory+img_name)[:, :, ::-1]
-        imgs.append(img)
-        img_names.append(img_name)
-        i+=1
+        if img_name[-4:] == '.jpg' or img_name[-4:] == 'jpeg':
+            # if i == 5:
+            #     break
+            img = cv2.imread(img_directory+img_name)[:, :, ::-1]
+            imgs.append(img)
+            img_names.append(img_name)
+            #        i+=1
 
     print("Running inference on {} images".format(len(img_names)))
     # Inference
@@ -138,6 +139,7 @@ def yolo_spec_conf_bbox_formatting(full_results_df):
             end_of_image = True
 
         if end_of_image == True:
+            #If first event of dataframe, i
             if i == 1 or i == 0:
                 image_id_1.append(current_image_appendix)
                 image_id_1_species_name.append(int_image_species)
@@ -207,6 +209,7 @@ def yolo_spec_conf_bbox_formatting(full_results_df):
 
     image_group_id.append(current_event)
 
+
     if i <= 3:
         image_id_3.append(current_image_appendix)
         image_id_3_species_name.append(int_image_species)
@@ -214,11 +217,11 @@ def yolo_spec_conf_bbox_formatting(full_results_df):
         image_id_3_bbox.append(int_image_bbox)
 
     if i <= 2:
-            image_id_2.append(current_image_appendix)
-            image_id_2_species_name.append(int_image_species)
-            image_id_2_conf.append(int_image_conf)
-            image_id_2_bbox.append(int_image_bbox)
-    if i <= 3:
+        image_id_2.append(current_image_appendix)
+        image_id_2_species_name.append(int_image_species)
+        image_id_2_conf.append(int_image_conf)
+        image_id_2_bbox.append(int_image_bbox)
+    if i <= 1:
         image_id_1.append(current_image_appendix)
         image_id_1_species_name.append(int_image_species)
         image_id_1_conf.append(int_image_conf)
