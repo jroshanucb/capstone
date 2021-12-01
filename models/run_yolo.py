@@ -29,7 +29,8 @@ def img_name_to_event(img):
 def yolo_inference(img_directory, weights_path):
 
     # Model
-    model = torch.hub.load('ultralytics/yolov5', 'custom', path=weights_path)
+    model = torch.hub.load('ultralytics/yolov5', 'custom', path=weights_path,
+    force_reload=True)
 
     #Images
     imgs = []
