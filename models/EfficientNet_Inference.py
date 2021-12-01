@@ -189,57 +189,57 @@ def perform_inference_batch(img_dir, phase, weights_path):
     classifications = []
 
     with torch.no_grad():
-        with tqdm(total = len(img_dir)) as pbar:
-            image_iteration = 1
-            for image in os.listdir(img_dir):
-                if image[-4:] == '.jpg' or image[-4:] == 'jpeg':
-                    if image_iteration == 1:
-                        print("Initiating Inference")
-                    elif image_iteration % 100 == 0:
-                        print("{} images done.".format(image_iteration))
-                    pbar.set_description("processing {}".format(image))
-                    image_inst = Image.open(img_dir + image).convert('RGB')
-                    input = data_transforms['val'](image_inst).to(device)
-                    input.unsqueeze_(0)
+        #with tqdm(total = len(img_dir)) as pbar:
+        image_iteration = 1
+        for image in os.listdir(img_dir):
+            if image[-4:] == '.jpg' or image[-4:] == 'jpeg':
+                if image_iteration == 1:
+                    print("Initiating Inference")
+                elif image_iteration % 100 == 0:
+                    print("{} images done.".format(image_iteration))
+                pbar.set_description("processing {}".format(image))
+                image_inst = Image.open(img_dir + image).convert('RGB')
+                input = data_transforms['val'](image_inst).to(device)
+                input.unsqueeze_(0)
 
-                    model_ft.to(device)
-                    output = model_ft(input)
+                model_ft.to(device)
+                output = model_ft(input)
 
-                    ### use calibrated logits via temperature scaling
-                    output = torch.div(output, temperature)
+                ### use calibrated logits via temperature scaling
+                output = torch.div(output, temperature)
 
-                    ## top5 pred
-                    sm = nn.Softmax(dim=1)
-                    probabilities = sm(output)
+                ## top5 pred
+                sm = nn.Softmax(dim=1)
+                probabilities = sm(output)
 
-                    top_5_conf, i = output.topk(k)
-                    prob, idx = probabilities.topk(k)
+                top_5_conf, i = output.topk(k)
+                prob, idx = probabilities.topk(k)
 
-                    dict_preds = {}
-                    itr = 0
-                    for x in i.cpu().numpy()[0]:
-                      if x in dict_preds:
-                        dict_preds[int(x)].append(float(prob.cpu().detach().numpy()[0][itr]))
-                      else:
-                        dict_preds[int(x)] = [float(prob.cpu().detach().numpy()[0][itr])]
-                      itr += 1
+                dict_preds = {}
+                itr = 0
+                for x in i.cpu().numpy()[0]:
+                  if x in dict_preds:
+                    dict_preds[int(x)].append(float(prob.cpu().detach().numpy()[0][itr]))
+                  else:
+                    dict_preds[int(x)] = [float(prob.cpu().detach().numpy()[0][itr])]
+                  itr += 1
 
-                    best_class = max(dict_preds, key=dict_preds.get)
-                    species_name = class_names[best_class]
-                    confidence_score = dict_preds[best_class]
+                best_class = max(dict_preds, key=dict_preds.get)
+                species_name = class_names[best_class]
+                confidence_score = dict_preds[best_class]
 
-                    classification = {
-                          "id": image,
-                          "class": int(best_class),
-                          "class_name": species_name,
-                          "conf": float(confidence_score[0]),
-                          "conf_dict": dict_preds
-                      }
+                classification = {
+                      "id": image,
+                      "class": int(best_class),
+                      "class_name": species_name,
+                      "conf": float(confidence_score[0]),
+                      "conf_dict": dict_preds
+                  }
 
-                    classifications.append(classification)
-                    pbar.update(1)
+                classifications.append(classification)
+                pbar.update(1)
 
-                    image_iteration+= 1
+                image_iteration+= 1
 
     output_json = {'phase{}_classification_results'.format(phase): classifications}
 

@@ -10,7 +10,7 @@ from run_megad import run_format_megad
 
 def run_models(img_directory):
     #images
-    #img_directory = '/Users/sleung2/Documents/MIDS Program/Capstone_local/snapshot_wisconsin/all/yolo_splits4.2/test/images/'
+    #img_directory = '/Users/sleung2/Documents/MIDS\ Program/Capstone_local/snapshot_wisconsin/all/yolo_splits4.2/test/images/'
 
     ##Labels
     #Stage 1
