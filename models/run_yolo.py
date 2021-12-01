@@ -7,6 +7,7 @@ import numpy as np
 from datetime import datetime
 
 from pathlib import Path
+import math
 
 #Helper functions
 def codes_to_labels(full_results_df, labels):
@@ -34,36 +35,50 @@ def yolo_inference(img_directory, weights_path):
     imgs = []
     img_names = []
 
-#    i = 1
     for img_name in os.listdir(img_directory):
         if img_name[-4:] == '.jpg' or img_name[-4:] == 'jpeg':
-            # if i == 5:
-            #     break
             img = cv2.imread(img_directory+img_name)[:, :, ::-1]
             imgs.append(img)
             img_names.append(img_name)
-            #        i+=1
 
-    print("Running inference on {} images".format(len(img_names)))
-    # Inference
-    results = model(imgs, size=329)  # includes NMS
 
-    #Combine results from all images into single pandas df
-    first = True
-    for tensor,image_name in zip(results.xyxy, img_names):
-        int_results_df = pd.DataFrame(np.array(tensor))
+    batch_size = 1000
+    num_images = len(img_names)
+    num_batches = int(math.ceil(num_images/batch_size))
 
-        int_results_df['image_name'] = image_name
+    print("Running inference on {} images in {} batches.".format(num_images, num_batches))
+    # Inference in batches
 
-        if first == True:
-            full_results_df = int_results_df
-            first = False
+    first_batch = True
+    for batch_num in range(1, 3):#num_batches+1):
+        img_batch = imgs[(batch_size*(batch_num - 1)) :(batch_size*batch_num)]
+        print('Running batch {}, {} images.'.format(batch_num, len(img_batch)))
+
+        results = model(img_batch, size=329)  # includes NMS
+
+        #Combine results from all rows of batch into single pandas df
+        first_row = True
+        for tensor,image_name in zip(results.xyxy, img_names):
+            int_results_df = pd.DataFrame(np.array(tensor))
+
+            int_results_df['image_name'] = image_name
+
+            if first_row == True:
+                batch_results_df = int_results_df
+                first_row = False
+            else:
+                batch_results_df = pd.concat([batch_results_df,
+                                             int_results_df])
+        #Combine results from all batches into single pandas df
+        if first_batch == True:
+                full_results_df = batch_results_df
+                first_batch = False
         else:
             full_results_df = pd.concat([full_results_df,
-                                         int_results_df])
+                                         batch_results_df])
 
     full_results_df =full_results_df.set_axis(['xmin','ymin', 'xmax', 'ymax', 'conf', 'class', 'image_name'],
-                                         axis = 1, inplace = False)
+                                             axis = 1, inplace = False)
 
     #Blank images do not produce any results so we need to add blank rows wiht just the image names
     blank_imgs = [img for img in img_names if img not in list(full_results_df['image_name'])]
