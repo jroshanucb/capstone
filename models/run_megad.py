@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import json
 
+import tensorflow as tf
+
 #Pre-reqs
 os.environ['PYTHONPATH'] += ":/content/ai4eutils"
 os.environ['PYTHONPATH'] += ":/content/CameraTraps"
