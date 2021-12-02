@@ -22,7 +22,33 @@ full_ensemble = pd.merge(full_ensemble, counts_bboxes,
 full_ensemble = full_ensemble.rename(columns={'ensemble_pred': 'blank',
                              'event_final_pred': 'species'})
 full_ensemble['blank'] = full_ensemble['blank'].apply(lambda x: True if x == 'blank' else False)
+
+'''
+---Ensemble Logic---
+Blanks
+-If stage 1 returned blank:
+    -Prediction = blank
+-If stage 1 returned species but stage 2 return blank:
+    -Prediction = blank
+-If stage 1 and stage 2 returned species but count returned 0:
+    -Prediction = blank
+
+species and counts
+-If stage 1 and stage 2 returned species and count > 0:
+    -Prediction = species column (Determined in stage 2.py)
+    -Count and bboxes = Yolo count unless MD count is less than Yolo count
+
+'''
+
+
+
+
+
+
+
 full_ensemble.to_csv('../results/full_ensemble.csv', index = False)
+
+
 
 ##BBoxes by image
 # bboxes.to_csv('../results/bbox_by_image.csv', index = False)
