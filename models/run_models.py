@@ -69,8 +69,8 @@ def run_models(img_directory):
     torch.cuda.empty_cache()
 
     #Model 5: Megadetector
-#    model_5_json_path = 'phase2_megadetector_output_yolosplits4-1.json'
-#    model_5_df = run_format_megad(img_directory, model_5_json_path, 5)
+    model_5_json_path = 'phase2_megadetector_output_yolosplits4-1.json'
+    model_5_df = run_format_megad(img_directory, model_5_json_path, 5)
 
 
     full_model_output = pd.concat([model_1_df,
