@@ -34,14 +34,14 @@ def reformat_md_json(images_dir, output_file_path):
 
         image_id = x.split(images_dir)[1]
 
-    if '.jpeg' in image_id:
-        #image_id = x.split('.jpeg')[0]
-        event_id = image_id.split('_')[0]
-        return event_id
-    else:
-        image_id = image_id.split('.jpg')[0]
-        event_id = image_id[:-1]
-        return event_id
+        if '.jpeg' in image_id:
+            #image_id = x.split('.jpeg')[0]
+            event_id = image_id.split('_')[0]
+            return event_id
+        else:
+            image_id = image_id.split('.jpg')[0]
+            event_id = image_id[:-1]
+            return event_id
 
     df['event_id'] = df.apply(lambda x: extract_MD_eventID(x.file), axis=1)
     df['image_id'] = df.apply(lambda x: extract_MD_imageID(x.file), axis=1)
