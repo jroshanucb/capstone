@@ -14,7 +14,7 @@ os.system('echo "PYTHONPATH: $PYTHONPATH"')
 def run_md_inference(images_dir, output_file_path):
 
 
-    os.system('python CameraTraps/detection/run_tf_detector_batch.py md_v4_1_0.pb "{}"\
+    os.system('python CameraTraps/detection/run_tf_detector_batch.py md_v4.1.0.pb "{}"\
      "{}" --recursive'.format(images_dir, output_file_path))
 
 def reformat_md_json(images_dir, output_file_path):
