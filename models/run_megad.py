@@ -3,6 +3,98 @@ import pandas as pd
 import numpy as np
 import json
 
+#Pre-reqs
+os.environ['PYTHONPATH'] += ":/content/ai4eutils"
+os.environ['PYTHONPATH'] += ":/content/CameraTraps"
+
+os.system('echo "PYTHONPATH: $PYTHONPATH"')
+
+def run_md_inference(images_dir, output_file_path):
+
+
+    os.system('!python run_tf_detector_batch.py megadetector_v4_1_0.pb "$images_dir" "$output_file_path" --recursive')
+
+def reformat_md_json(images_dir, output_file_path):
+    data = json.load(open(output_file_path))
+    df = pd.DataFrame(data["images"])
+
+    df['count'] = df['detections'].apply(lambda x: len([item for item in x]))
+
+    """
+    add event and image IDs per row
+    """
+
+    def extract_MD_imageID(x):
+      return x.split(images_dir)[1]
+
+    def extract_MD_eventID(x):
+
+        image_id = x.split(images_dir)[1]
+
+    if '.jpeg' in image_id:
+        #image_id = x.split('.jpeg')[0]
+        event_id = image_id.split('_')[0]
+        return event_id
+    else:
+        image_id = image_id.split('.jpg')[0]
+        event_id = image_id[:-1]
+        return event_id
+
+    df['event_id'] = df.apply(lambda x: extract_MD_eventID(x.file), axis=1)
+    df['image_id'] = df.apply(lambda x: extract_MD_imageID(x.file), axis=1)
+
+    def convert_coco_to_yolo(single_line ):
+
+        yolo_list = []
+        x = single_line[0]
+        y = single_line[1]
+        w = single_line[2]
+        h = single_line[3]
+        new_x = round(x + (w/2),4)
+        new_y = round(y + (h/2),4)
+        #new_data = [yolo_class + ' {0:.4f} {0:.4f} {0:.4f} {0:.4f}'.format(new_x,new_y,w,h)]
+        #new_data = ['{}, {}, {}, {}'.format(new_x,new_y,w,h)]
+        new_data = [new_x,new_y,w,h]
+        yolo_list.append(new_data)
+        return yolo_list[0]
+
+    output_dict = {}
+
+    for index, row in df.iterrows():
+        img_id = row['image_id']
+        event_id = row['event_id']
+        detections = row['detections']
+
+        """
+        [{'bbox': [0.3783, 0.7698, 0.288, 0.2232], 'category': '1', 'conf': 0.999},
+        {'bbox': [0.002641, 0.7788, 0.1323, 0.2188], 'category': '1', 'conf': 0.843}]
+        """
+        yolo_bbox_dict = []
+        for item in detections:
+        #print(item['bbox'])
+        yolo_bbox = {
+            "bbox": convert_coco_to_yolo(item['bbox']),
+            "conf": item['conf']
+        }
+        yolo_bbox_dict.append(yolo_bbox)
+
+
+        result_dict = {
+          "img_id": img_id,
+          "event_id": event_id,
+          "detections": yolo_bbox_dict
+
+        }
+
+        if event_id in output_dict:
+        output_dict[event_id].append(result_dict)
+        else:
+        output_dict[event_id] = [result_dict]
+
+    output_json = {'phase2_classification_results': output_dict}
+
+    return output_json
+
 #Helper Fuctions
 def codes_to_labels(full_results_df, labels):
 
@@ -161,10 +253,13 @@ def format_megad(megad_dict, model_id):
     return formatted_megad
 
 
-def run_format_megad(json_path, model_id):
+def run_format_megad(images_dir, json_path, model_id):
 
     print('Running Megadetector, Model ID {}'.format(model_id))
-    stage2_megad_output_json = json_path
+    run_md_inference(images_dir, json_path)
+
+    output_json = reformat_md_json(json_path)
+    stage2_megad_output_json = output_json
 
     stage2_megad_dict = load_megad_json(stage2_megad_output_json)
     formatted_megad = format_megad(stage2_megad_dict, model_id)
