@@ -74,24 +74,24 @@ def reformat_md_json(images_dir, output_file_path):
         yolo_bbox_dict = []
         for item in detections:
         #print(item['bbox'])
-        yolo_bbox = {
-            "bbox": convert_coco_to_yolo(item['bbox']),
-            "conf": item['conf']
-        }
-        yolo_bbox_dict.append(yolo_bbox)
+            yolo_bbox = {
+                "bbox": convert_coco_to_yolo(item['bbox']),
+                "conf": item['conf']
+            }
+            yolo_bbox_dict.append(yolo_bbox)
 
 
-        result_dict = {
-          "img_id": img_id,
-          "event_id": event_id,
-          "detections": yolo_bbox_dict
+            result_dict = {
+              "img_id": img_id,
+              "event_id": event_id,
+              "detections": yolo_bbox_dict
 
-        }
+            }
 
         if event_id in output_dict:
-        output_dict[event_id].append(result_dict)
+            output_dict[event_id].append(result_dict)
         else:
-        output_dict[event_id] = [result_dict]
+            output_dict[event_id] = [result_dict]
 
     output_json = {'phase2_classification_results': output_dict}
 
