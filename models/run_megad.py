@@ -118,10 +118,7 @@ def img_name_to_event(img):
 def load_megad_json(output_json):
     megad_json = {}
 
-    with open(output_json) as json_file:
-        data = json.load(json_file)
-
-    data = data['phase2_classification_results']
+    data = output_json['phase2_classification_results']
 
     # key, value in image_id is in the format: '0': "SSWI000000020143548C.jpg"
     for key, value in data.items():
