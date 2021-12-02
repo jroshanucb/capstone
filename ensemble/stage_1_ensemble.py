@@ -9,8 +9,8 @@ from os.path import isfile, join
 
 
 #Read lines from txt results file
-top_path = '../src/'
-output_file = 'model_output_11202021_4.csv'
+top_path = '../models/'
+output_file = 'full_model_output.csv'
 
 #HELPER FUNCTIONS
 
@@ -43,7 +43,10 @@ def blank_model_event_preds(top_path, output_file, model_id):
 
     model_output_df['event_prediction'] = model_output_df.apply(lambda row: event_prediction_for_model(row), axis = 1)
 
-    model_output_df['event_conf'] = model_output_df.apply(lambda row: event_conf_for_model(row), axis = 1)
+    if model_id == 1:
+        model_output_df['event_conf'] = 0
+    elif model_id == 2:
+        model_output_df['event_conf'] = model_output_df.apply(lambda row: event_conf_for_model(row), axis = 1)
 
     return model_output_df[[ 'image_group_id',
        'event_prediction', 'event_conf']]

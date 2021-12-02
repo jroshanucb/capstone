@@ -13,8 +13,8 @@ from PIL import Image
 
 #Read lines from csv output file
 ROOT = '../'
-foldername="src/"
-filename='model_output_11202021_4.csv'
+foldername="models/"
+filename='full_model_output.csv'
 
 #YOLO Counts Logic
 #
@@ -28,7 +28,7 @@ def load_ground_truth(foldername=os.path.join(ROOT,"data/") , filename="test_lab
 
     return ground_truth
 
-def load_megadetector_output(foldername="src/", filename='model_output_11202021_4.csv'):#filename="phase2_megadetector_output_YOLO.json"):
+def load_megadetector_output(foldername="src/", filename='full_model_output.csv'):#filename="phase2_megadetector_output_YOLO.json"):
     """
     Pkg dependencies: os, glob, re, pandas
     Purpose:

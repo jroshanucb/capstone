@@ -10,8 +10,8 @@ from os.path import isfile, join
 
 
 #Read lines from txt results file
-top_path = '../src/'
-output_file = 'model_output_11202021_4.csv'
+top_path = '../models/'
+output_file = 'full_model_output.csv'
 
 #YOLO Species Logic
 # Species

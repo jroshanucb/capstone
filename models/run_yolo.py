@@ -88,7 +88,7 @@ path= weights_path, force_reload=True)
     blank_img_df = blank_img_df.fillna('')
 
     full_results_df = pd.concat([full_results_df, blank_img_df])
-
+    full_results_df.to_csv('yolo_full_results.csv')
     return full_results_df
 
 def yolo_boxes_to_df(full_results_df):
