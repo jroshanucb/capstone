@@ -6,10 +6,10 @@ import json
 import tensorflow as tf
 
 #Pre-reqs
-# os.environ['PYTHONPATH'] += ":/ai4eutils"
-# os.environ['PYTHONPATH'] += ":/CameraTraps"
+os.environ['PYTHONPATH'] += ":/ai4eutils"
+os.environ['PYTHONPATH'] += ":/CameraTraps"
 #
-# os.system('echo "PYTHONPATH: $PYTHONPATH"')
+os.system('echo "PYTHONPATH: $PYTHONPATH"')
 
 def run_md_inference(images_dir, output_file_path):
 
