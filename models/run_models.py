@@ -49,29 +49,29 @@ def run_models(img_directory):
     stage_2_effnet_labels.insert(0, 'label', range(0, len(stage_2_effnet_labels)))
 
     #Model 1: Yolo Blank
-    # model_1_df = run_format_yolo(img_directory, 'yolov5l_best_blank.pt', stage_1_labels, 1,
-    #                                                     run_blur = False)
-    # torch.cuda.empty_cache()
-    #
-    # #Model 2: Effnet Blank
-    # model_2_weights_path = 'efficientnetb0_50epochs_finetuned_model_yolosplits3_blanks.pt'
-    # model_2_df = run_format_effnet(img_directory, model_2_weights_path, stage_1_labels, 2)
-    # torch.cuda.empty_cache()
-    #
-    # #Model 3: Yolo Species
-    # model_3_df = run_format_yolo(img_directory, 'yolov5x_splits4_best.pt', stage_2_yolo_labels, 3,
-    #                                                 run_blur = True)
-    # torch.cuda.empty_cache()
-    #
-    # #Model 4: Effnet Species
-    # model_4_weights_path = 'efficientnetb5_100epochs_finetuned_model_yolosplits4_BasePlusBlank.pt'
-    # model_4_df = run_format_effnet(img_directory, model_4_weights_path, stage_2_effnet_labels, 4)
-    # torch.cuda.empty_cache()
+    model_1_df = run_format_yolo(img_directory, 'yolov5l_best_blank.pt', stage_1_labels, 1,
+                                                        run_blur = False)
+    torch.cuda.empty_cache()
+
+    #Model 2: Effnet Blank
+    model_2_weights_path = 'efficientnetb0_50epochs_finetuned_model_yolosplits3_blanks.pt'
+    model_2_df = run_format_effnet(img_directory, model_2_weights_path, stage_1_labels, 2)
+    torch.cuda.empty_cache()
+
+    #Model 3: Yolo Species
+    model_3_df = run_format_yolo(img_directory, 'yolov5x_splits4_best.pt', stage_2_yolo_labels, 3,
+                                                    run_blur = True)
+    torch.cuda.empty_cache()
+
+    #Model 4: Effnet Species
+    model_4_weights_path = 'efficientnetb5_100epochs_finetuned_model_yolosplits4_BasePlusBlank.pt'
+    model_4_df = run_format_effnet(img_directory, model_4_weights_path, stage_2_effnet_labels, 4)
+    torch.cuda.empty_cache()
 
     #Model 5: Megadetector
     model_5_json_path = 'phase2_megadetector_output_yolosplits4-1.json'
     model_5_df = run_format_megad(img_directory, model_5_json_path, 5)
-    #model_5_df.to_csv('model_5_df.csv', index = False)
+
 
     full_model_output = pd.concat([model_1_df,
                 model_2_df,
