@@ -82,7 +82,7 @@ def reformat_md_json(images_dir, output_file_path):
             yolo_bbox_dict.append(yolo_bbox)
 
 
-            result_dict = {
+        result_dict = {
               "img_id": img_id,
               "event_id": event_id,
               "detections": yolo_bbox_dict
