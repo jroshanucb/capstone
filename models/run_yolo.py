@@ -53,13 +53,15 @@ path= weights_path, force_reload=True)
     first_batch = True
     for batch_num in range(1, num_batches+1):
         img_batch = imgs[(batch_size*(batch_num - 1)) :(batch_size*batch_num)]
+        img_name_batch = img_names[(batch_size*(batch_num - 1)) :(batch_size*batch_num)]
+
         print('Running batch {}, {} images.'.format(batch_num, len(img_batch)))
 
         results = model(img_batch, size=329)  # includes NMS
 
         #Combine results from all rows of batch into single pandas df
         first_row = True
-        for tensor,image_name in zip(results.xyxy, img_names):
+        for tensor,image_name in zip(results.xyxy, img_name_batch):
             int_results_df = pd.DataFrame(np.array(tensor.cpu()))
 
             int_results_df['image_name'] = image_name
