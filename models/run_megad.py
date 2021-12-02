@@ -14,7 +14,8 @@ import tensorflow as tf
 def run_md_inference(images_dir, output_file_path):
 
 
-    os.system('!python run_tf_detector_batch.py megadetector_v4_1_0.pb "$images_dir" "$output_file_path" --recursive')
+    os.system('python run_tf_detector_batch.py megadetector_v4_1_0.pb "{}"\
+     "{}" --recursive'.format(images_dir, output_file_path))
 
 def reformat_md_json(images_dir, output_file_path):
     data = json.load(open(output_file_path))
@@ -260,7 +261,7 @@ def run_format_megad(images_dir, json_path, model_id):
     print('Running Megadetector, Model ID {}'.format(model_id))
     run_md_inference(images_dir, json_path)
 
-    output_json = reformat_md_json(json_path)
+    output_json = reformat_md_json(images_dir, json_path)
     stage2_megad_output_json = output_json
 
     stage2_megad_dict = load_megad_json(stage2_megad_output_json)
