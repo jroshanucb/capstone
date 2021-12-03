@@ -78,7 +78,7 @@ def ensemble_pred_logic(ensemble_row, conf_thresh):
     return ensemble_pred
 
 
-def run_ensemble_stage_1(conf_thresh = .6):
+def run_ensemble_stage_1(conf_thresh = .89):
     '''conf_thresh: Threshold at which to overwrite effnet with yolo on empty images'''
     yolo_model_output = blank_model_event_preds(top_path, output_file, 1)
     effnet_model_output = blank_model_event_preds(top_path, output_file, 2)
