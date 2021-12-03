@@ -44,7 +44,7 @@ def api_all():
     # query = "SELECT * FROM public.event_images where image_group_id='SSWI000000019636502'" #Deer
     # query = "SELECT * FROM public.event_images where image_group_id='SSWI000000017069780'"   #Elk
     if (event_id == 0):
-        event_id = random.randint(1, 26635)
+        event_id = random.randint(0, 2190)
     else:
         event_id = event_id + 1 + random.randint(1, 20)
         # event_id = event_id + 1
