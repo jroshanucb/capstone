@@ -30,7 +30,7 @@ def getDictFromDf(df):
             conv_response['animaltype'] = "Blank"
             conv_response['animaltype2'] = "Blank"
         conv_response['event_id'] = row['event_id']
-        animals = ["Turkey", "Cottontail", "Fox, Gray", "Fox, Red", "Bear", "Coyote", "Opossum", "Raccoon", "Snowshoe Hare", "Deer", "Elk", "Wolf"]
+        animals = ["turkey", "rabbit", "fox", "bear", "coyote", "opossum", "raccoon", "deer", "elk", "wolf"]
         if conv_response['animaltype'] not in animals:
             conv_response['animaltype'] = "Other"
     return conv_response
