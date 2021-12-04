@@ -60,7 +60,7 @@ def model_pred_merge(yolo_model_output, effnet_model_output):
 
     blank_model_output_merged = blank_model_output_merged.rename(columns = {'event_prediction_x': 'effnet_pred',
                                                                             'event_conf_x':'effnet_conf',
-                                                       'event_prediction_y': 'yolo_pred',
+                                                                            'event_prediction_y': 'yolo_pred',
                                                                            'event_conf_y':'yolo_conf'})
 
     return blank_model_output_merged
@@ -74,18 +74,22 @@ def ensemble_pred_logic(ensemble_row, conf_thresh):
         ensemble_pred =  ensemble_row['yolo_pred']
     else:
         ensemble_pred = ensemble_row['effnet_pred']
-
     return ensemble_pred
 
 
-def run_ensemble_stage_1(conf_thresh = .89):
+def run_ensemble_stage_1(conf_thresh = .89, modelsz = 'small'):
     '''conf_thresh: Threshold at which to overwrite effnet with yolo on empty images'''
-    yolo_model_output = blank_model_event_preds(top_path, output_file, 1)
     effnet_model_output = blank_model_event_preds(top_path, output_file, 2)
-    blank_model_output_merged = model_pred_merge(yolo_model_output, effnet_model_output)
+    if modelsz in ['medium', 'large']:
+        yolo_model_output = blank_model_event_preds(top_path, output_file, 1)
 
-    blank_model_output_merged['ensemble_pred'] = blank_model_output_merged.apply(lambda x: ensemble_pred_logic(x, conf_thresh), axis = 1)
 
-    #blank_model_output_merged.to_csv('../ensemble/merged_stage_1_pred_conf.csv', index = False)
+        blank_model_output_merged = model_pred_merge(yolo_model_output, effnet_model_output)
 
-    return blank_model_output_merged[['image_group_id', 'ensemble_pred']]
+        blank_model_output_merged['ensemble_pred'] = blank_model_output_merged.apply(lambda x: ensemble_pred_logic(x, conf_thresh), axis = 1)
+
+        return blank_model_output_merged[['image_group_id', 'ensemble_pred']]
+    else:
+        effnet_model_output = effnet_model_output.rename(columns = {'effnet_pred': 'ensemble_pred'})
+
+        return effnet_model_output[['image_group_id', 'ensemble_pred']]

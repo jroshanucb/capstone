@@ -26,7 +26,7 @@ def img_name_to_event(img):
 
     return event_name
 
-def yolo_inference(img_directory, weights_path):
+def yolo_inference(img_directory, weights_path, imgsz):
 
     # Model
     model = torch.hub.load('ultralytics/yolov5','custom',
@@ -57,7 +57,7 @@ path= weights_path, force_reload=True)
 
         print('Running batch {}, {} images.'.format(batch_num, len(img_batch)))
 
-        results = model(img_batch, size=329)  # includes NMS
+        results = model(img_batch, size=imgsz)  # includes NMS
 
         #Combine results from all rows of batch into single pandas df
         first_row = True
@@ -341,10 +341,10 @@ def blur_processing(img_directory, formatted_yolo, run_blur):
     return formatted_yolo
 
 
-def run_format_yolo(img_directory, weight, labels, model_id, run_blur = True):
+def run_format_yolo(img_directory, weight, imgsz, labels, model_id, run_blur = True):
 
     print('Running Yolo, Model ID {}'.format(model_id))
-    full_results_df = yolo_inference(img_directory, weight)
+    full_results_df = yolo_inference(img_directory, weight, imgsz)
     full_results_df = yolo_boxes_to_df(full_results_df)
     full_results_df = codes_to_labels(full_results_df, labels)
 

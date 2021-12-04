@@ -23,8 +23,7 @@ full_ensemble = pd.merge(run_ensemble_stage_1(), run_ensemble_stage_2(),
 
 #Stage 3: Counts and bboxes
 counts_bboxes = run_ensemble_stage_3()
-# counts = counts_bboxes.groupby('image_group_id').max()[['final_count']].reset_index()
-# bboxes = counts_bboxes[['image_group_id', 'image_id', 'final_bbox']]
+
 
 #Merge All Stages to produce 2 tables (or csv)
 

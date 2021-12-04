@@ -41,11 +41,11 @@ def set_parameter_requires_grad(model, feature_extracting):
         for param in model.parameters():
             param.requires_grad = False
 
-def initialize_model(model_name, num_classes, feature_extract, use_pretrained=True):
+def initialize_model(model_name, num_classes, input_size, feature_extract, use_pretrained=True):
     # Initialize these variables which will be set in this if statement. Each of these
     #   variables is model specific.
     model_ft = None
-    input_size = 0
+    input_size = input_size
 
     if model_name == "efficientnetb5":
       if use_pretrained == True:
@@ -58,7 +58,6 @@ def initialize_model(model_name, num_classes, feature_extract, use_pretrained=Tr
       #model_ft._fc = nn.Sequential(nn.Linear(num_ftrs, num_classes))
 
       model_ft._fc = nn.Linear(num_ftrs, num_classes)
-      input_size = 224
 
     elif model_name == "efficientnetb0":
       if use_pretrained == True:
@@ -71,7 +70,6 @@ def initialize_model(model_name, num_classes, feature_extract, use_pretrained=Tr
       #model_ft._fc = nn.Sequential(nn.Linear(num_ftrs, num_classes))
 
       model_ft._fc = nn.Linear(num_ftrs, num_classes)
-      input_size = 224
 
     else:
         print("Invalid model name, exiting...")
@@ -125,7 +123,8 @@ def perform_inference_single_image(img_path):
     return classification
 
 ## batch inference for directory of images
-def perform_inference_batch(device, img_dir, phase, weights_path, data_transforms):
+def perform_inference_batch(device, img_dir, phase, weights_path, data_transforms,
+input_size):
 
     if phase == 1:
         k = 2
@@ -149,7 +148,8 @@ def perform_inference_batch(device, img_dir, phase, weights_path, data_transform
         checkpoint = torch.load(Path(weights_path), map_location=torch.device('cpu'))
     else:
         checkpoint = torch.load(Path(weights_path))
-    model_ft, input_size = initialize_model(model_name, num_classes, feature_extract=False, use_pretrained=False) #change True/False
+    model_ft, input_size = initialize_model(model_name, num_classes, input_size, feature_extract=False, use_pretrained=False)
+     #change True/False
     model_ft.load_state_dict(checkpoint)
     model_ft.eval()
 
@@ -242,7 +242,7 @@ def run_effnet_inference(img_directory, phase, weights_path, input_size):
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    output_json = perform_inference_batch(device, img_directory, phase, weights_path, data_transforms)
+    output_json = perform_inference_batch(device, img_directory, phase, weights_path, data_transforms, input_size)
 
     return output_json
 
@@ -408,7 +408,7 @@ def format_effnet(effnet_dict, model_id):
 
     return formatted_effnet
 
-def run_format_effnet(img_directory, weights_path, labels, model_id):
+def run_format_effnet(img_directory, weights_path, imgsz, labels, model_id):
     print('Running EfficientNet, Model ID {}'.format(model_id))
 
     if model_id == 2:
@@ -416,7 +416,7 @@ def run_format_effnet(img_directory, weights_path, labels, model_id):
     elif model_id == 4:
         phase = 2
 
-    output_json = run_effnet_inference(img_directory, phase, weights_path, input_size = 329)
+    output_json = run_effnet_inference(img_directory, phase, weights_path, input_size = imgsz)
     stage2_effnet_dict = load_effnet_json(output_json, model_id, labels)
     stage2_formatted_effnet = format_effnet(stage2_effnet_dict, model_id)
 

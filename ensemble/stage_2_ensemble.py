@@ -10,7 +10,7 @@ from os.path import isfile, join
 
 
 #Read lines from txt results file
-top_path = '../models/'
+top_path = '../results/'
 output_file = 'full_model_output.csv'
 
 #YOLO Species Logic
@@ -352,45 +352,46 @@ def output_final_pred_conf(x, dict_col):
   #   return x[top_ind[0]]
   return dict_col[x]
 
-def run_ensemble_stage_2():
+def run_ensemble_stage_2(modelsz = 'small'):
 
     sample_input = pd.read_csv(top_path + output_file)
 
     df_model_id3 = sample_input[sample_input.model_id == 3]
-    df_model_id4 = sample_input[sample_input.model_id == 4]
+
 
     df_model_id3['img1_species_conf_dict'] = df_model_id3.apply(lambda x: create_species_conf_dict(x.image_id_1_species_name, x.image_id_1_conf, x.model_id), axis=1)
     df_model_id3['img2_species_conf_dict'] = df_model_id3.apply(lambda x: create_species_conf_dict(x.image_id_2_species_name, x.image_id_2_conf, x.model_id), axis=1)
     df_model_id3['img3_species_conf_dict'] = df_model_id3.apply(lambda x: create_species_conf_dict(x.image_id_3_species_name, x.image_id_3_conf, x.model_id), axis=1)
-
-    df_model_id4['img1_species_conf_dict'] = df_model_id4.apply(lambda x: create_species_conf_dict(x.image_id_1_species_name, x.image_id_1_conf, x.model_id), axis=1)
-    df_model_id4['img2_species_conf_dict'] = df_model_id4.apply(lambda x: create_species_conf_dict(x.image_id_2_species_name, x.image_id_2_conf, x.model_id), axis=1)
-    df_model_id4['img3_species_conf_dict'] = df_model_id4.apply(lambda x: create_species_conf_dict(x.image_id_3_species_name, x.image_id_3_conf, x.model_id), axis=1)
-
-
     df_model_id3['consol_dict'] = df_model_id3.apply(lambda x: merge_species_conf_dict_top3(x.img1_species_conf_dict, x.img2_species_conf_dict, x.img3_species_conf_dict), axis=1)
-    df_model_id4['consol_dict'] = df_model_id4.apply(lambda x: merge_species_conf_dict_top3(x.img1_species_conf_dict, x.img2_species_conf_dict, x.img3_species_conf_dict), axis=1)
-
     df_model_id3['top_pred'] = df_model_id3.apply(lambda x: get_pred_from_top3(x.consol_dict), axis=1)
-    df_model_id4['top_pred'] = df_model_id4.apply(lambda x: get_pred_from_top3(x.consol_dict), axis=1)
-
     df_model_id3['top3_dict'] = df_model_id3.apply(lambda x: get_topk(merge_species_conf_dict(x.img1_species_conf_dict, x.img2_species_conf_dict, x.img3_species_conf_dict),3), axis=1)
-    df_model_id4['top3_dict'] = df_model_id4.apply(lambda x: get_topk(merge_species_conf_dict(x.img1_species_conf_dict, x.img2_species_conf_dict, x.img3_species_conf_dict),3), axis=1)
 
-    """
-    merge model_id3 and model_id4 at the event level
-    the final prediction dictionaries from both models can be on the same row
-    """
-    df_merge = pd.merge(df_model_id3, df_model_id4, how='inner', on="image_group_id", suffixes=('_model_3', '_model_4'))
-    df_merge = df_merge[['image_group_id', 'consol_dict_model_3', 'top_pred_model_3', 'top3_dict_model_3', 'consol_dict_model_4', 'top_pred_model_4', 'top3_dict_model_4']]
-    #df_merge.head()
+    return
 
-    df_merge['topk_conf_3_scaled'] = df_merge.apply(lambda x: scale_model_id3(x.top3_dict_model_3), axis=1)
-    df_merge['topk_conf_4_scaled'] = df_merge.apply(lambda x: scale_model_id4(x.top3_dict_model_4), axis=1)
+    if modelsz in ['medium', 'large']:
+        df_model_id4 = sample_input[sample_input.model_id == 4]
+        df_model_id4['img1_species_conf_dict'] = df_model_id4.apply(lambda x: create_species_conf_dict(x.image_id_1_species_name, x.image_id_1_conf, x.model_id), axis=1)
+        df_model_id4['img2_species_conf_dict'] = df_model_id4.apply(lambda x: create_species_conf_dict(x.image_id_2_species_name, x.image_id_2_conf, x.model_id), axis=1)
+        df_model_id4['img3_species_conf_dict'] = df_model_id4.apply(lambda x: create_species_conf_dict(x.image_id_3_species_name, x.image_id_3_conf, x.model_id), axis=1)
+        df_model_id4['consol_dict'] = df_model_id4.apply(lambda x: merge_species_conf_dict_top3(x.img1_species_conf_dict, x.img2_species_conf_dict, x.img3_species_conf_dict), axis=1)
+        df_model_id4['top_pred'] = df_model_id4.apply(lambda x: get_pred_from_top3(x.consol_dict), axis=1)
+        df_model_id4['top3_dict'] = df_model_id4.apply(lambda x: get_topk(merge_species_conf_dict(x.img1_species_conf_dict, x.img2_species_conf_dict, x.img3_species_conf_dict),3), axis=1)
 
-    df_merge['event_final_topk_conf'] = df_merge.apply(lambda x: get_final_topk(combine_topk_conf(x.topk_conf_3_scaled, x.topk_conf_4_scaled),3), axis=1)
-    df_merge['event_final_pred'] = df_merge.apply(lambda x: output_final_pred_species(x.event_final_topk_conf), axis=1)
-    df_merge['event_final_pred_conf'] = df_merge.apply(lambda x: output_final_pred_conf(x.event_final_pred, x.event_final_topk_conf), axis=1)
 
-    #df_merge.to_csv('../results/merged_stage_2_pred_conf.csv', index = False)
-    return df_merge[['image_group_id','consol_dict_model_3', 'consol_dict_model_4', 'event_final_topk_conf', 'event_final_pred']]
+        """
+        merge model_id3 and model_id4 at the event level
+        the final prediction dictionaries from both models can be on the same row
+        """
+        df_merge = pd.merge(df_model_id3, df_model_id4, how='inner', on="image_group_id", suffixes=('_model_3', '_model_4'))
+        df_merge = df_merge[['image_group_id', 'consol_dict_model_3', 'top_pred_model_3', 'top3_dict_model_3', 'consol_dict_model_4', 'top_pred_model_4', 'top3_dict_model_4']]
+        #df_merge.head()
+
+        df_merge['topk_conf_3_scaled'] = df_merge.apply(lambda x: scale_model_id3(x.top3_dict_model_3), axis=1)
+        df_merge['topk_conf_4_scaled'] = df_merge.apply(lambda x: scale_model_id4(x.top3_dict_model_4), axis=1)
+
+        df_merge['event_final_topk_conf'] = df_merge.apply(lambda x: get_final_topk(combine_topk_conf(x.topk_conf_3_scaled, x.topk_conf_4_scaled),3), axis=1)
+        df_merge['event_final_pred'] = df_merge.apply(lambda x: output_final_pred_species(x.event_final_topk_conf), axis=1)
+        df_merge['event_final_pred_conf'] = df_merge.apply(lambda x: output_final_pred_conf(x.event_final_pred, x.event_final_topk_conf), axis=1)
+
+        #df_merge.to_csv('../results/merged_stage_2_pred_conf.csv', index = False)
+        return df_merge[['image_group_id','consol_dict_model_3', 'consol_dict_model_4', 'event_final_topk_conf', 'event_final_pred']]
