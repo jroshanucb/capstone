@@ -13,7 +13,7 @@ from PIL import Image
 
 #Read lines from csv output file
 ROOT = '../'
-foldername="models/"
+foldername="results/"
 filename='full_model_output.csv'
 
 #YOLO Counts Logic
@@ -21,12 +21,6 @@ filename='full_model_output.csv'
 #Counts
 # Events with multiple images of same class- we will take the max of the majority class
 # Events with all different labels will get labelled with the count of highest conf score label
-
-def load_ground_truth(foldername=os.path.join(ROOT,"data/") , filename="test_labels4-1.csv"):
-
-    ground_truth = pd.read_csv(foldername + filename)
-
-    return ground_truth
 
 def load_megadetector_output(foldername="src/", filename='full_model_output.csv'):#filename="phase2_megadetector_output_YOLO.json"):
     """
@@ -217,11 +211,26 @@ def merge_md_yolo(yolo_df, megadetector_df):
 
 
 
-def run_ensemble_stage_3():
+def run_ensemble_stage_3(modelsz = 'small'):
 
-    #ground_truth = load_ground_truth()
-    megadetector = load_megadetector_output(foldername, filename)
     yolov5 = load_yolo_output(foldername, filename)
-    final_counts_bboxes = merge_md_yolo(yolov5, megadetector)
 
-    return final_counts_bboxes
+    #If small or medium model, only run yolo
+    if modelsz in ['small', 'medium']:
+        yolov5 = yolov5.rename(columns = {'event_id': 'image_group_id'})
+        yolo_eventid_counts = yolov5[['event_id', 'yolo_count']].groupby(by='event_id').agg('max')
+        yolo_eventid_counts = yolo_eventid_counts.rename(columns = {'yolo_count': 'yolo_count_max'})
+        yolov5 = pd.merge(yolov5,yolo_eventid_counts,
+                how = 'left',
+                on = 'event_id')
+        yolov5['md_count_max'] = ''
+        yolov5['md_bbox'] = ''
+
+        return yolov5[['event_id', 'md_count_max', 'yolo_count_max', 'md_bbox', 'yolo_bbox']]
+
+    #If large model, only run yolo
+    if modelsz == 'large':
+        megadetector = load_megadetector_output(foldername, filename)
+        final_counts_bboxes = merge_md_yolo(yolov5, megadetector)
+
+        return final_counts_bboxes

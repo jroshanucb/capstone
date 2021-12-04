@@ -365,8 +365,12 @@ def run_ensemble_stage_2(modelsz = 'small'):
     df_model_id3['consol_dict'] = df_model_id3.apply(lambda x: merge_species_conf_dict_top3(x.img1_species_conf_dict, x.img2_species_conf_dict, x.img3_species_conf_dict), axis=1)
     df_model_id3['top_pred'] = df_model_id3.apply(lambda x: get_pred_from_top3(x.consol_dict), axis=1)
     df_model_id3['top3_dict'] = df_model_id3.apply(lambda x: get_topk(merge_species_conf_dict(x.img1_species_conf_dict, x.img2_species_conf_dict, x.img3_species_conf_dict),3), axis=1)
+    if modelsz == 'small':
+        df_model_id3['consol_dict_model_4'] = ''
+        df_model_id3['event_final_topk_conf'] = ''
+        df_model_id3['event_final_pred'] = df_model_id3['top_pred']
 
-    return
+        return df_model_id3[['image_group_id','consol_dict_model_3', 'consol_dict_model_4', 'event_final_topk_conf', 'event_final_pred']]
 
     if modelsz in ['medium', 'large']:
         df_model_id4 = sample_input[sample_input.model_id == 4]
