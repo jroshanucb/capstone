@@ -4,6 +4,8 @@ import sys
 import pandas as pd
 import numpy as np
 from datetime import datetime
+import warnings
+warnings.filterwarnings("ignore")
 
 from model_inf.run_yolo import run_format_yolo
 from model_inf.run_effnet import run_format_effnet

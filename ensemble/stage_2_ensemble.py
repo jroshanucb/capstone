@@ -8,6 +8,9 @@ from collections import Counter
 from os import listdir
 from os.path import isfile, join
 
+import warnings
+warnings.filterwarnings("ignore")
+
 
 #Read lines from txt results file
 top_path = '../results/'

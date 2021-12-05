@@ -6,6 +6,8 @@ import cv2
 from pathlib import Path
 import glob
 import re
+import warnings
+warnings.filterwarnings("ignore")
 
 import seaborn as sns
 import matplotlib.pyplot as plt

@@ -13,8 +13,8 @@ import json
 #from tqdm.notebook import tqdm
 #tqdm().pandas()
 import shutil
-
-
+import warnings
+warnings.filterwarnings("ignore")
 
 import torch
 import torch.nn as nn

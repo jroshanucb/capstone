@@ -8,6 +8,8 @@ import cv2
 from pathlib import Path
 import glob
 import re
+import warnings
+warnings.filterwarnings("ignore")
 
 from model_inf.run_models import run_ensemble_models
 from ensemble.full_ensemble import run_full_ensemble

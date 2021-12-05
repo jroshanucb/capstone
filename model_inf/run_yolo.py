@@ -5,6 +5,8 @@ import os
 import pandas as pd
 import numpy as np
 from datetime import datetime
+import warnings
+warnings.filterwarnings("ignore")
 
 from pathlib import Path
 import math

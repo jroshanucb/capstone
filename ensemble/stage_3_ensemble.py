@@ -9,6 +9,9 @@ import re
 import cv2
 from PIL import Image
 
+import warnings
+warnings.filterwarnings("ignore")
+
 #STAGE 3- COUNTS
 
 #Read lines from csv output file

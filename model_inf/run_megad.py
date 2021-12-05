@@ -2,6 +2,8 @@ import os
 import pandas as pd
 import numpy as np
 import json
+import warnings
+warnings.filterwarnings("ignore")
 
 import tensorflow as tf
 
