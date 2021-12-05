@@ -65,11 +65,11 @@ def run_ensemble_models(img_directory,
         torch.cuda.empty_cache()
 
     #Model 2: Effnet Blank
-    # model_2_weights_path = 'weights/efficientnetb0_50epochs_finetuned_model_yolosplits3_blanks.pt'
-    # model_2_df = run_format_effnet(img_directory, model_2_weights_path, 224, stage_1_labels, 2)
-    #
-    # model_result_list.append(model_2_df)
-    # torch.cuda.empty_cache()
+    model_2_weights_path = 'weights/efficientnetb0_50epochs_finetuned_model_yolosplits3_blanks.pt'
+    model_2_df = run_format_effnet(img_directory, model_2_weights_path, 224, stage_1_labels, 2)
+    
+    model_result_list.append(model_2_df)
+    torch.cuda.empty_cache()
 
     #Model 3: Yolo Species
     model_3_df = run_format_yolo(img_directory, 'weights/yolov5x_splits4_best.pt', imgsz,
