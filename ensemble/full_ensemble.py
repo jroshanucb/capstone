@@ -165,7 +165,7 @@ pred= truth_pred_df_no_other['species_name']
 cm = confusion_matrix(y_test, pred, labels = label_list)
 
 ax= plt.subplot()
-sns.heatmap(cm, annot=True, fmt='g', ax=ax);  #annot=True to annotate cells, ftm='g' to disable scientific notation
+sns.heatmap(cm, annot=True, fmt='g', ax=ax, cmap="Blues");  #annot=True to annotate cells, ftm='g' to disable scientific notation
 
 # labels, title and ticks
 ax.set_xlabel('Predicted labels');ax.set_ylabel(
