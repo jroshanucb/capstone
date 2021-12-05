@@ -54,20 +54,6 @@ def run_ensemble_models(img_directory,
 
     model_result_list = []
 
-    print(
-    """
-    Running CAMinos: Intelligent Trail Camera Annotation.
-
-      __.------~~~-.
-    ,'/             `\
-    " \  ,..__ | ,_   `\_,
-       >/|/   ~~\||`\(`~,~'
-       | `\     /'|   \_;
-       "   "   "
-
-    """
-    )
-
     #Model 1: Yolo Blank
     if modelsz in ['medium', 'large']:
         model_1_df = run_format_yolo(img_directory, 'weights/yolov5l_best_blank.pt', imgsz,

@@ -36,6 +36,20 @@ if __name__ == "__main__":
     write_images =  cmd_opts.writeimages
     imgsz = cmd_opts.imgsz
 
+    print(
+    """\
+    Running CAMinos: Intelligent Trail Camera Annotation.
+
+  __.------~~~-.
+,'/             `\
+" \  ,..__ | ,_   `\_,
+   >/|/   ~~\||`\(`~,~'
+   | `\     /'|   \_;
+   "   "   "
+
+    """
+    )
+
     os.chdir('model_inf/')
     run_ensemble_models(img_directory = img_directory,
                     modelsz = modelsz,
