@@ -257,7 +257,6 @@ def format_megad(megad_dict, model_id):
 
 def run_format_megad(images_dir, json_path, model_id):
 
-    print('Running Megadetector, Model ID {}'.format(model_id))
     run_md_inference(images_dir, json_path)
 
     output_json = reformat_md_json(images_dir, json_path)

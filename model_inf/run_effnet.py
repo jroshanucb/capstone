@@ -165,7 +165,7 @@ input_size):
                 if image[-4:] == '.jpg' or image[-4:] == 'jpeg':
                     if image_iteration == 1:
                         print("Initiating Inference")
-                    elif image_iteration % 500 == 0:
+                    elif image_iteration % 1000 == 0:
                         print("{} images done.".format(image_iteration))
 #                    pbar.set_description("processing {}".format(image))
                     image_inst = Image.open(img_dir + image).convert('RGB')
@@ -408,7 +408,6 @@ def format_effnet(effnet_dict, model_id):
     return formatted_effnet
 
 def run_format_effnet(img_directory, weights_path, imgsz, labels, model_id):
-    print('Running EfficientNet, Model ID {}'.format(model_id))
 
     if model_id == 2:
         phase = 1

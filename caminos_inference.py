@@ -54,6 +54,7 @@ if __name__ == "__main__":
     """
     )
 
+
     os.chdir('model_inf/')
     run_ensemble_models(img_directory = img_directory,
                     modelsz = modelsz,

@@ -345,7 +345,6 @@ def blur_processing(img_directory, formatted_yolo, run_blur):
 
 def run_format_yolo(img_directory, weight, imgsz, labels, model_id, run_blur = True):
 
-    print('Running Yolo, Model ID {}'.format(model_id))
     full_results_df = yolo_inference(img_directory, weight, imgsz)
     full_results_df = yolo_boxes_to_df(full_results_df)
     full_results_df = codes_to_labels(full_results_df, labels)
