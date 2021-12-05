@@ -4,4 +4,5 @@
 *CameraTraps
 *.DS_Store
 *.pyc
+*.zip
 results/bbox_images

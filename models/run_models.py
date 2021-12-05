@@ -80,7 +80,7 @@ def run_ensemble_models(img_directory,
 
     if modelsz in ['medium', 'large']:
         #Model 4: Effnet Species
-        model_4_weights_path = 'weights/efficientnetb5_100epochs_finetuned_model_yolosplits4_BasePlusBlank.pt'
+        model_4_weights_path = 'weights/efficientnetb5_25epochs_finetuned_model_yolosplits4_456_BasePlusBlank.pt'
         model_4_df = run_format_effnet(img_directory, model_4_weights_path, 456, stage_2_effnet_labels, 4)
         model_result_list.append(model_4_df)
         torch.cuda.empty_cache()
