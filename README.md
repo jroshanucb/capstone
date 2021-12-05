@@ -78,22 +78,16 @@ Arguments:
 	--source 
 		-path to get images for inference
 		-default='../model_inf/test_images/'
-	
 	--truth
-		-path to get csv for true labels and counts
-    by event, 
-   	 	-default= '../data/test_labels.csv'
-    
-    --modelsz
-    	-model size: small, medium or large 		-default='small'
-    	
-    --dbwrite
+		-path to get csv for true labels and counts by event
+   	 	-default= '../data/test_labels.csv'    	--modelsz
+    	-model size: small, medium or large 		-default='small' 	
+   --dbwrite
     	-db persistence enabler'
-    	-default='false'
-    	
-	--writeimages
+    	-default='false'  	
+   --writeimages
 		-write images with bboxes
 		-default='true'
-	--imgsz
+   --imgsz
 		-inference image size h,w (square)
 		-default=329
