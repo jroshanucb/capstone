@@ -1,2 +1,5 @@
 *.pt
 *.pb
+*ai4eutils
+*CameraTraps
+*.DS_Store

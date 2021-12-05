@@ -9,7 +9,7 @@ from os.path import isfile, join
 
 
 #Read lines from txt results file
-top_path = '../models/'
+top_path = 'results/'
 output_file = 'full_model_output.csv'
 
 #HELPER FUNCTIONS
@@ -77,7 +77,7 @@ def ensemble_pred_logic(ensemble_row, conf_thresh):
     return ensemble_pred
 
 
-def run_ensemble_stage_1(conf_thresh = .89, modelsz = 'small'):
+def run_ensemble_stage_1(modelsz, conf_thresh = .89):
     '''conf_thresh: Threshold at which to overwrite effnet with yolo on empty images'''
     effnet_model_output = blank_model_event_preds(top_path, output_file, 2)
     if modelsz in ['medium', 'large']:
@@ -90,6 +90,6 @@ def run_ensemble_stage_1(conf_thresh = .89, modelsz = 'small'):
 
         return blank_model_output_merged[['image_group_id', 'ensemble_pred']]
     else:
-        effnet_model_output = effnet_model_output.rename(columns = {'effnet_pred': 'ensemble_pred'})
+        effnet_model_output = effnet_model_output.rename(columns = {'event_prediction': 'ensemble_pred'})
 
         return effnet_model_output[['image_group_id', 'ensemble_pred']]

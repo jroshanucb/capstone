@@ -12,7 +12,7 @@ from PIL import Image
 #STAGE 3- COUNTS
 
 #Read lines from csv output file
-ROOT = '../'
+ROOT = ''
 foldername="results/"
 filename='full_model_output.csv'
 
@@ -153,6 +153,45 @@ def load_yolo_output(foldername="src/", filename='model_output_11202021_4.csv'):
 
     return yolov5
 
++def non_merge_yolo_formatting(yolo_df):
+    """
+    Formatting yolo correctly when running small or medium size ensemble.
+    """
+    yolo_eventid_counts = yolo_df[['event_id', 'yolo_count']].groupby(by='event_id').agg('max')
+    yolo_eventid_counts = yolo_eventid_counts.rename(columns = {'yolo_count': 'yolo_count_max'})
+    final_counts = pd.merge(yolo_df,yolo_eventid_counts,
+            how = 'left',
+            on = 'event_id')
+
+    final_counts['image_id_appendix'] = final_counts['image_id'].str[-1]
+
+    event_id_group = []
+    yolo_count_max_group = []
+    yolo_bbox_group = []
+
+    for group, values in final_counts.groupby(['event_id', 'yolo_count_max']):
+
+        event_id_group.append(group[0])
+        yolo_count_max_group.append(group[1])
+
+        md_bbox_dict = {}
+        yolo_bbox_dict = {}
+
+        for image, yolo in zip(list(values['image_id_appendix']),  list(values['yolo_bbox'])):
+            yolo_bbox_dict[image] = yolo
+
+        yolo_bbox_group.append(yolo_bbox_dict)
+
+    final_counts_bboxes = pd.DataFrame({'event_id': event_id_group,
+                  'yolo_count_max': yolo_count_max_group,
+                 'yolo_bbox': yolo_bbox_group})
+    final_counts_bboxes = final_counts_bboxes.rename(columns = {'event_id': 'image_group_id'})
+
+    final_counts_bboxes['md_count_max'] = ''
+    final_counts_bboxes['md_bbox'] = ''
+
+    return final_counts_bboxes
+
 def merge_md_yolo(yolo_df, megadetector_df):
     """
     Pkg dependencies: pandas
@@ -211,22 +250,15 @@ def merge_md_yolo(yolo_df, megadetector_df):
 
 
 
-def run_ensemble_stage_3(modelsz = 'small'):
+def run_ensemble_stage_3(modelsz):
 
     yolov5 = load_yolo_output(foldername, filename)
 
     #If small or medium model, only run yolo
     if modelsz in ['small', 'medium']:
-        yolov5 = yolov5.rename(columns = {'event_id': 'image_group_id'})
-        yolo_eventid_counts = yolov5[['event_id', 'yolo_count']].groupby(by='event_id').agg('max')
-        yolo_eventid_counts = yolo_eventid_counts.rename(columns = {'yolo_count': 'yolo_count_max'})
-        yolov5 = pd.merge(yolov5,yolo_eventid_counts,
-                how = 'left',
-                on = 'event_id')
-        yolov5['md_count_max'] = ''
-        yolov5['md_bbox'] = ''
+        final_counts_bboxes = non_merge_yolo_formatting(yolov5)
 
-        return yolov5[['event_id', 'md_count_max', 'yolo_count_max', 'md_bbox', 'yolo_bbox']]
+        return final_counts_bboxes[['image_group_id', 'md_count_max', 'yolo_count_max', 'md_bbox', 'yolo_bbox']]
 
     #If large model, only run yolo
     if modelsz == 'large':
