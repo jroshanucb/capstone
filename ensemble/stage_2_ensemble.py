@@ -69,7 +69,7 @@ def create_species_conf_dict(x, y, model):
       conf_list = [str(0.99)]
     else:
       species_list = list(x.split(","))
-      conf_list = list(y.split(","))
+      conf_list = list(str(y).split(","))
 
     new_dictionary = {}
     for key, value in zip(species_list, conf_list):

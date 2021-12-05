@@ -31,4 +31,5 @@ pip install timm
 pip install pandas tqdm pillow humanfriendly matplotlib tqdm jsonpickle statistics requests
 pip install sklearn
 pip install opencv-python
-pip install pathlib
+pip install pathlib2
+pip install seaborn
