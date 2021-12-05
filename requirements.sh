@@ -22,8 +22,8 @@ export PYTHONPATH="$PYTHONPATH:$PWD/model_inf:$PWD/model_inf"
 sudo apt install python3-pip
 
 # If you have a GPU on your computer, change "tensorflow" to "tensorflow-gpu"
-#pip install tensorflow==1.13.1
-#pip install tensorflow-gpu==1.13.1
+#pip install tensorflow
+#pip install tensorflow-gpu
 
 # Install other dependencies
 pip install efficientnet_pytorch
