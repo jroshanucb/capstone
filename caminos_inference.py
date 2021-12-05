@@ -35,11 +35,14 @@ if __name__ == "__main__":
     write_images =  cmd_opts.writeimages
     imgsz = cmd_opts.imgsz
 
+    os.chdir('models/')
     run_ensemble_models(img_directory = img_directory,
                     modelsz = modelsz,
                     dbwrite = dbwrite,
                     imgsz = imgsz)
 
+
+    os.chdir('../ensemble')
     run_full_ensemble(modelsz = modelsz,
                     img_directory = img_directory,
                     truth_file = truth_file,

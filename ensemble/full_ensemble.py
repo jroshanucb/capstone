@@ -10,9 +10,9 @@ import pylab as pl
 from matplotlib.pyplot import figure
 from sklearn.metrics import classification_report
 
-from stage_1_ensemble import run_ensemble_stage_1
-from stage_2_ensemble import run_ensemble_stage_2
-from stage_3_ensemble import run_ensemble_stage_3
+from ensemble.stage_1_ensemble import run_ensemble_stage_1
+from ensemble.stage_2_ensemble import run_ensemble_stage_2
+from ensemble.stage_3_ensemble import run_ensemble_stage_3
 
 image_dir = 'https://wisconsintrails.s3.us-west-2.amazonaws.com/images/'
 bbox_image_dir = 'https://wisconsintrails.s3.us-west-2.amazonaws.com/bboximages/'

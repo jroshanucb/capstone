@@ -153,7 +153,7 @@ def load_yolo_output(foldername="src/", filename='model_output_11202021_4.csv'):
 
     return yolov5
 
-+def non_merge_yolo_formatting(yolo_df):
+def non_merge_yolo_formatting(yolo_df):
     """
     Formatting yolo correctly when running small or medium size ensemble.
     """
