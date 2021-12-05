@@ -17,9 +17,9 @@ CAMinos 🦌 applies computer vision to trail camera images to help automate the
 <details open>
 <summary>Install</summary>
 
-[**Python>=3.6.0**](https://www.python.org/) is required with all
+[**Python>=3.6.0**](https://www.python.org/), [**Pip3**](https://pip.pypa.io/en/stable/) is required with all
 [requirements.ssh](https://github.com/ultralytics/yolov5/blob/master/requirements.txt) installed including
-[**PyTorch>=1.7**](https://pytorch.org/get-started/locally/):
+[**PyTorch>=1.7**](https://pytorch.org/get-started/locally/) and [**Tensorflow>=1.13**](https://github.com/tensorflow/tensorflow) or if running on GPU, [**Tensorflow-GPU>=1.13**](https://pypi.org/project/tensorflow-gpu/).
 <!-- $ sudo apt update && apt install -y libgl1-mesa-glx libsm6 libxext6 libxrender-dev -->
 
 ```bash
@@ -73,21 +73,27 @@ Example
 
 ```python
 python caminos_inference.py --source ../model_inf/test_images/
+```
 
 Arguments:
-	--source 
-		-path to get images for inference
-		-default='../model_inf/test_images/'
-	--truth
-		-path to get csv for true labels and counts by event
-   	 	-default= '../data/test_labels.csv'    	--modelsz
-    	-model size: small, medium or large 		-default='small' 	
-   --dbwrite
-    	-db persistence enabler'
-    	-default='false'  	
-   --writeimages
-		-write images with bboxes
-		-default='true'
-   --imgsz
-		-inference image size h,w (square)
-		-default=329
+
+```python
+--source 
+	-path to get images for inference
+	-default='../model_inf/test_images/'
+--truth
+	-path to get csv for true labels and counts by event
+   	-default= '../data/test_labels.csv' 
+--modelsz
+    -model size: small, medium or large 
+    -default='small' 	
+--dbwrite
+    -db persistence enabler'
+    -default='false'  	
+--writeimages
+	-write images with bboxes
+	-default='true'
+--imgsz
+	-inference image size h,w (square)
+	-default=329
+```
