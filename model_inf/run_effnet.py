@@ -92,7 +92,7 @@ def perform_inference_single_image(img_path):
         output = model_ft(input)
 
         ### use calibrated logits via temperature scaling
-        temperature = 1.392
+        temperature = 1.29
         output = torch.div(output, temperature)
 
         ## top5 pred
@@ -138,7 +138,7 @@ input_size):
 
     elif phase == 2:
         k = 5
-        temperature = 1.392
+        temperature = 1.29
         num_classes = 11
         class_names = ['bear', 'blank', 'cottontail_snowshoehare', 'coyote', 'deer', 'elk', 'foxgray_foxred', 'opossum', 'raccoon', 'turkey', 'wolf']
         model_name = "efficientnetb5"
