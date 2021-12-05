@@ -9,7 +9,7 @@ from pathlib import Path
 import glob
 import re
 
-from models.run_models import run_ensemble_models
+from model_inf.run_models import run_ensemble_models
 from ensemble.full_ensemble import run_full_ensemble
 
 def parse_opt():
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     write_images =  cmd_opts.writeimages
     imgsz = cmd_opts.imgsz
 
-    os.chdir('models/')
+    os.chdir('model_inf/')
     run_ensemble_models(img_directory = img_directory,
                     modelsz = modelsz,
                     dbwrite = dbwrite,
