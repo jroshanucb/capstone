@@ -10,7 +10,7 @@ from os.path import isfile, join
 
 
 #Read lines from txt results file
-top_path = 'results/'
+top_path = '../results/'
 output_file = 'full_model_output.csv'
 
 #YOLO Species Logic

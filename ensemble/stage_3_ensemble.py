@@ -12,7 +12,7 @@ from PIL import Image
 #STAGE 3- COUNTS
 
 #Read lines from csv output file
-ROOT = ''
+ROOT = '../'
 foldername="results/"
 filename='full_model_output.csv'
 

@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 import json
+from pathlib import Path
 
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -85,43 +86,47 @@ def full_ensemble_logic(full_ensemble, modelsz):
         else:
             image_appendices = ['_0A.jpeg','_1B.jpeg', '_2C.jpeg']
 
-    #Raw images
-    url_image_1.append(image_dir + img_grp + image_appendices[0])
-    url_image_2.append(image_dir + img_grp + image_appendices[1])
-    url_image_3.append(image_dir + img_grp + image_appendices[2])
+        #Raw images
+        url_image_1.append(db_image_dir + img_grp + image_appendices[0])
+        url_image_2.append(db_image_dir + img_grp + image_appendices[1])
+        url_image_3.append(db_image_dir + img_grp + image_appendices[2])
 
-    #Bbox images
-    url_image_1_bbox.append(bbox_image_dir + img_grp + image_appendices[0])
-    url_image_2_bbox.append(bbox_image_dir + img_grp + image_appendices[1])
-    url_image_3_bbox.append(bbox_image_dir + img_grp + image_appendices[2])
-
-
-
-    if (values['blank'] == True) or (values['species'] == 'blank') or\
-    (values['yolo_count_max'] == 0 and values['md_count_max'] == 0):
-        blank_list.append(True)
-        final_pred_list.append('blank')
-        final_count_list.append(0)
-        final_bbox_list.append('None')
-        final_top_3_list.append('')
-    else:
-        blank_list.append(False)
-        final_pred_list.append(values['species'])
+        #Bbox images
+        url_image_1_bbox.append(db_bbox_image_dir + img_grp + image_appendices[0])
+        url_image_2_bbox.append(db_bbox_image_dir + img_grp + image_appendices[1])
+        url_image_3_bbox.append(db_bbox_image_dir + img_grp + image_appendices[2])
 
 
-        if values['yolo_count_max'] == 0:
-            final_count_list.append(values['md_count_max'])
-            final_bbox_list.append(values['md_bbox'])
-        elif values['md_count_max'] == 0:
-            final_count_list.append(values['yolo_count_max'])
-            final_bbox_list.append(values['yolo_bbox'])
 
-        elif (values['yolo_count_max'] <= values['md_count_max']):
-            final_count_list.append(values['yolo_count_max'])
-            final_bbox_list.append(values['yolo_bbox'])
+        if (values['blank'] == True) or (values['species'] == 'blank') or\
+        (values['yolo_count_max'] == 0 and values['md_count_max'] == 0):
+            blank_list.append(True)
+            final_pred_list.append('blank')
+            final_count_list.append(0)
+            final_bbox_list.append('None')
+            final_top_3_list.append('')
         else:
-            final_count_list.append(values['md_count_max'])
-            final_bbox_list.append(values['md_bbox'])
+            blank_list.append(False)
+            final_pred_list.append(values['species'])
+
+            if modelsz in ['small', 'medium']:
+                final_count_list.append(values['yolo_count_max'])
+                final_bbox_list.append(values['yolo_bbox'])
+
+            elif modelsz == 'large':
+                if values['yolo_count_max'] == 0:
+                    final_count_list.append(values['md_count_max'])
+                    final_bbox_list.append(values['md_bbox'])
+                elif values['md_count_max'] == 0:
+                    final_count_list.append(values['yolo_count_max'])
+                    final_bbox_list.append(values['yolo_bbox'])
+
+                elif (values['yolo_count_max'] <= values['md_count_max']):
+                    final_count_list.append(values['yolo_count_max'])
+                    final_bbox_list.append(values['yolo_bbox'])
+                else:
+                    final_count_list.append(values['md_count_max'])
+                    final_bbox_list.append(values['md_bbox'])
 
     while("" in final_top_3_list) :
         final_top_3_list.remove('')
@@ -281,14 +286,16 @@ def print_bbox_images(event_images_table, read_img_directory, write_img_director
                 print("{} not written to bbox images.".format(img_name))
                 continue
 
-def run_full_ensemble(modelsz = 'small', read_img_directory = '/Users/sleung2/Documents/MIDS Program/Capstone_local/snapshot_wisconsin/all/yolo_splits4.2/test/images/',
- truth_file_path = 'data/test_labels.csv',
-        write_images = 'true',
-         img_size=329):
+def run_full_ensemble(modelsz = 'small',
+    read_img_directory = '/Users/sleung2/Documents/MIDS Program/Capstone_local/snapshot_wisconsin/all/yolo_splits4.2/test/images/',
+    truth_file_path = '../data/test_labels.csv',
+    write_images = 'true',
+    img_size=329):
     full_ensemble = merge_ensemble_scripts(modelsz)
+    full_ensemble.to_csv('../results/full_ensemble_int.csv', index = False)
     event_images_table = full_ensemble_logic(full_ensemble, modelsz)
 
-    event_images_table.to_csv('results/event_images_table.csv', index = False)
+    event_images_table.to_csv('../results/event_images_table.csv', index = False)
 
     if truth_file_path != None:
         print_metrics(event_images_table, truth_file_path)
