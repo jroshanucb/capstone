@@ -16,7 +16,7 @@ from ensemble.full_ensemble import run_full_ensemble
 
 def parse_opt():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--source', type=str, default='test_images/', help='path to get images for inference')
+    parser.add_argument('--source', type=str, default='../model_inf/test_images/', help='path to get images for inference')
     parser.add_argument('--truth', type=str, default='../data/test_labels.csv', help='path to get csv for true labels and counts\
     by event')
     parser.add_argument('--modelsz', type=str, default='small', help='model size: small, medium or large?')
