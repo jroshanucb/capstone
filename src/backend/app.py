@@ -7,11 +7,17 @@ from random import choice
 from db_conn import load_db_table
 import json
 import random
+import argparse
+import pandas as pd
+import pandasql as ps
+
 seed(1)
 app = flask.Flask(__name__)
 CORS(app)
 app.config["DEBUG"] = True
 
+cmd_options = None
+data_frame = None
 
 @app.route('/', methods=['GET'])
 def home():
@@ -30,7 +36,7 @@ def getDictFromDf(df):
             conv_response['animaltype'] = "Blank"
             conv_response['animaltype2'] = "Blank"
         conv_response['event_id'] = row['event_id']
-        animals = ["turkey", "rabbit", "fox", "bear", "coyote", "opossum", "raccoon", "deer", "elk", "wolf"]
+        animals = ["turkey", "rabbit", "fox", "bear", "coyote", "opossum", "raccoon", "deer", "elk", "wolf", "blank"]
         if conv_response['animaltype'] not in animals:
             conv_response['animaltype'] = "Other"
     return conv_response
@@ -38,6 +44,11 @@ def getDictFromDf(df):
 # A route to return new set of images.
 @app.route('/api/v1/resources/newclassify', methods=['GET'])
 def api_all():
+    global cmd_options
+    global data_frame
+    print(cmd_options)
+    print(type(cmd_options))
+
     config_db = "database.ini"
     event_id = request.args.get('event_id', default=0, type=int)
     print("even_id in GET: ", event_id)
@@ -46,10 +57,21 @@ def api_all():
     if (event_id == 0):
         event_id = random.randint(0, 2190)
     else:
-        event_id = event_id + 1 + random.randint(1, 20)
-        # event_id = event_id + 1
-    query = "SELECT * FROM public.event_images where event_id=" + str(event_id)
-    df = load_db_table(config_db, query)
+        if (cmd_options.skip == '1'):
+            event_id = event_id + 1
+        elif (cmd_options.skip == 'random'):
+            event_id = event_id + 1 + random.randint(1, 20)
+        elif (cmd_options.skip == 'custome'):
+            event_id = event_id + 1
+        if (event_id > 2190):
+            event_id = random.randint(0, 2190)
+
+    if (cmd_options.enable_db == 'false'):
+        query = "SELECT * FROM data_frame where event_id=" + str(event_id)
+        df = ps.sqldf(query)
+    else:
+        query = "SELECT * FROM public.event_images where event_id=" + str(event_id)
+        df = load_db_table(config_db, query)
     print("print from the DB query run: ", df)
     conv_response = getDictFromDf(df)
     print("json conversion: ", conv_response)
@@ -68,5 +90,21 @@ def annotate():
     return jsonify("{'message' : 'success'}")
 
 
-if __name__ == '__main__':
+def parse_opt():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--enable_db', type=str, default='false', help='DB vs local CSV')
+    parser.add_argument('--skip', type=str, default='random', help='random = event_id increments random(1..10); 1 = increment by 1; custom')
+    opt = parser.parse_args()
+    return opt
+
+def main(cmd_opts):
+    global cmd_options
+    global data_frame
+    cmd_options = cmd_opts
+    print(cmd_options)
+    data_frame = pd.read_csv("../../results/event_images_table.csv")
     app.run(debug=True,host='0.0.0.0')
+
+if __name__ == "__main__":
+    cmd_opts = parse_opt()
+    main(cmd_opts)

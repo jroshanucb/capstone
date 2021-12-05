@@ -186,37 +186,21 @@ a{
         </div>
         <div class="rightcontainter">
             <div class="subright">
-                <!-- <mat-button-toggle-group fxLayout="row wrap" name="categories_1" [(ngModel)] = "animaltype">
-                    <mat-button-toggle fxFlex="50%" value="Turkey" checked>Turkey</mat-button-toggle>
-                    <mat-button-toggle fxFlex="50%" value="Cottontail" checked>Cottontail</mat-button-toggle>
-                    <mat-button-toggle fxFlex="50%" value="Fox, Gray" checked>Fox Gray</mat-button-toggle>
-                    <mat-button-toggle fxFlex="50%" value="Fox, Red" checked>Fox Red</mat-button-toggle>
-                    <mat-button-toggle fxFlex="50%" value="Bear" checked>Bear</mat-button-toggle>
-                    <mat-button-toggle fxFlex="50%" value="Coyote" checked>Coyote</mat-button-toggle>
-                    <mat-button-toggle fxFlex="50%" value="Opossum" checked>Opossum</mat-button-toggle>
-                    <mat-button-toggle fxFlex="50%" value="Raccoon" checked>Raccoon</mat-button-toggle>
-                    <mat-button-toggle fxFlex="50%" value="Snowshoe Hare" checked>Snowshoe Hare</mat-button-toggle>
-                    <mat-button-toggle fxFlex="50%" value="Deer" checked>Deer</mat-button-toggle>
-                    <mat-button-toggle fxFlex="50%" value="Elk" checked>Elk</mat-button-toggle>
-                    <mat-button-toggle fxFlex="50%" value="Wolf" checked>Wolf</mat-button-toggle>
-                    <mat-button-toggle fxFlex="100%" value="Other" checked>Other</mat-button-toggle>
-                </mat-button-toggle-group> -->
-
                 <div id="myDIV">
                     <div class="firstcolumn">
-                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'turkey'}" (click)="onSpeciesClick('turkey')" value="turkey">Turkey</button>
-                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'rabbit'}" (click)="onSpeciesClick('rabbit')"  value="rabbit">Rabbit</button>
-                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'fox'}" (click)="onSpeciesClick('fox')"  value="fox">Fox</button>
                         <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'bear'}" (click)="onSpeciesClick('bear')"  value="bear">Bear</button>
-                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'coyote'}" (click)="onSpeciesClick('coyote')"  value="coyote">Coyote</button>
+                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'deer'}" (click)="onSpeciesClick('deer')"  value="deer">Deer</button>
+                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'fox'}" (click)="onSpeciesClick('fox')"  value="fox">Fox</button>
+                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'rabbit'}" (click)="onSpeciesClick('rabbit')"  value="rabbit">Rabbit</button>
+                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'turkey'}" (click)="onSpeciesClick('turkey')" value="turkey">Turkey</button>
                         <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'blank'}" (click)="onSpeciesClick('blank')"  value="blank">Blank</button>
                     </div>
                     <div class="firstcolumn">
-                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'raccoon'}" (click)="onSpeciesClick('raccoon')"  value="raccoon">Raccoon</button>
-                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'deer'}" (click)="onSpeciesClick('deer')"  value="deer">Deer</button>
+                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'coyote'}" (click)="onSpeciesClick('coyote')"  value="coyote">Coyote</button>
                         <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'elk'}" (click)="onSpeciesClick('elk')"  value="elk">Elk</button>
-                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'wolf'}" (click)="onSpeciesClick('wolf')"  value="wolf">Wolf</button>
                         <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'opossum'}" (click)="onSpeciesClick('opossum')"  value="opossum">Opossum</button>
+                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'raccoon'}" (click)="onSpeciesClick('raccoon')"  value="raccoon">Raccoon</button>
+                        <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'wolf'}" (click)="onSpeciesClick('wolf')"  value="wolf">Wolf</button>
                         <button mat-stroked-button [ngClass]="{'btn':true, 'active' : animaltype == 'Other'}" (click)="onSpeciesClick('Other')"  value="Other">Other</button>
                     </div>
                   </div>
