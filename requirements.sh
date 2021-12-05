@@ -16,10 +16,19 @@ git clone https://github.com/microsoft/ai4eutils/
 #Set python virtual env for megadetector packages
 cd ..
 export PYTHONPATH="$PYTHONPATH:$PWD/model_inf/ai4eutils:$PWD/model_inf/CameraTraps"
+export PYTHONPATH="$PYTHONPATH:$PWD/model_inf:$PWD/model_inf"
+
+#install pip 
+sudo apt install python3-pip
 
 # If you have a GPU on your computer, change "tensorflow" to "tensorflow-gpu"
-pip install tensorflow==1.13.1
+#pip install tensorflow==1.13.1
+#pip install tensorflow-gpu==1.13.1
 
 # Install other dependencies
+pip install efficientnet_pytorch
+pip install timm
 pip install pandas tqdm pillow humanfriendly matplotlib tqdm jsonpickle statistics requests
 pip install sklearn
+pip install opencv-python
+pip install pathlib

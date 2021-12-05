@@ -8,8 +8,8 @@ warnings.filterwarnings("ignore")
 import tensorflow as tf
 
 #Pre-reqs
-os.environ['PYTHONPATH'] += ":/ai4eutils"
-os.environ['PYTHONPATH'] += ":/CameraTraps"
+#os.environ['PYTHONPATH'] += ":/ai4eutils"
+#os.environ['PYTHONPATH'] += ":/CameraTraps"
 #
 os.system('echo "PYTHONPATH: $PYTHONPATH"')
 

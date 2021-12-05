@@ -193,10 +193,60 @@ def print_metrics(event_images_table, truth_file_path):
     plt.show()
 
     ###Classification Report
-    y_true = truth_pred_df_no_other['CLASS_SPECIES_RESTATED']
-    y_pred = truth_pred_df_no_other['species_name']
 
-    print(classification_report(y_true, y_pred, target_names=label_list))
+    print(classification_report(y_test, pred, target_names=label_list))
+
+def print_metrics_top3(event_images_table, truth_file_path):
+    #Test to Ground truth
+    truth_file = pd.read_csv(truth_file_path)
+
+    event_images_table = pd.merge(truth_file, event_images_table,
+             right_on = 'image_group_id',
+             left_on = 'TRIGGER_ID',
+             how = 'left')
+    event_images_table = event_images_table.drop_duplicates(subset = 'image_group_id')
+
+    #Filter out Other and Blank
+    event_images_table = event_images_table[event_images_table['CLASS_SPECIES_RESTATED'] != 'other']
+
+    def check_species_present(x,y):
+      if x in y:
+        return 1
+      else:
+        return 0
+    def confirm_top3_species(x, y, z):
+      if x == 1:
+        ## return top5 pred, which is the true label
+        return y
+      else:
+        ## return top1 pred (probably incorrect pred)
+        return z
+
+    event_images_table['top3_present'] = event_images_table.apply(lambda x: check_species_present(x.CLASS_SPECIES_RESTATED, x.event_final_topk_conf), axis=1)
+    event_images_table['top3_species_pred'] = event_images_table.apply(lambda x: confirm_top3_species(x.top3_present, x.CLASS_SPECIES_RESTATED, x.species_name), axis=1)
+    test_actuals = event_images_table['CLASS_SPECIES_RESTATED'].values
+    test_preds = event_images_table['top3_species_pred'].values
+    label_list = np.unique(test_actuals)
+
+    ###Confusion Matrix
+    figure(figsize=(14, 10), dpi=80)
+
+    cm = confusion_matrix(test_actuals, test_preds, labels=label_list)
+    ax= plt.subplot()
+    sns.heatmap(cm, annot=True, fmt='g', ax=ax, cmap="Blues"); #annot=True to annotate cells, ftm='g' to disable scientific notation
+
+    # labels, title and ticks
+    ax.set_xlabel('Predicted labels');ax.set_ylabel(
+        'True labels');
+    ax.set_title('Confusion Matrix');
+    ax.xaxis.set_ticklabels(label_list); ax.yaxis.set_ticklabels(label_list);
+    plt.xticks(rotation = 45)
+    plt.yticks(rotation = 45)
+    plt.show()
+
+    print(classification_report(test_actuals, test_preds, target_names=label_list))
+
+    return
 
 def increment_path(path, exist_ok=False, sep='', mkdir=True):
     # Increment file or directory path, i.e. bbox_images/exp --> bbox_images/exp{sep}2, bbox_images/exp{sep}3, ... etc.
@@ -302,6 +352,7 @@ def run_full_ensemble(modelsz = 'small',
 
     if truth_file_path != None:
         print_metrics(event_images_table, truth_file_path)
+        #print_metrics_top3(event_images_table, truth_file_path)
 
     if write_images == 'true':
         write_img_directory = str(increment_path('../results/bbox_images/exp'))
