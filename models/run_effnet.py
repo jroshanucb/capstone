@@ -57,7 +57,9 @@ def initialize_model(model_name, num_classes, input_size, feature_extract, use_p
       num_ftrs = model_ft._fc.in_features
       #model_ft._fc = nn.Sequential(nn.Linear(num_ftrs, num_classes))
 
-      model_ft._fc = nn.Linear(num_ftrs, num_classes)
+      model_ft._fc = nn.Sequential(nn.Linear(num_ftrs, 512),
+                                   nn.Linear(512, num_classes))
+      input_size = 456
 
     elif model_name == "efficientnetb0":
       if use_pretrained == True:
@@ -70,6 +72,7 @@ def initialize_model(model_name, num_classes, input_size, feature_extract, use_p
       #model_ft._fc = nn.Sequential(nn.Linear(num_ftrs, num_classes))
 
       model_ft._fc = nn.Linear(num_ftrs, num_classes)
+      input_size = 224
 
     else:
         print("Invalid model name, exiting...")
@@ -217,23 +220,19 @@ def run_effnet_inference(img_directory, phase, weights_path, input_size):
     input_size = input_size
     data_transforms = {
         'train': transforms.Compose([
-            #transforms.Resize((299,299)),
-            transforms.RandomResizedCrop(input_size),
+            transforms.Resize((input_size, input_size)),
             transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(20),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
         'val': transforms.Compose([
-            #transforms.Resize((299,299)),
-            transforms.Resize(input_size),
-            transforms.CenterCrop(input_size),
+            transforms.Resize((input_size, input_size)),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
         'test': transforms.Compose([
-            #transforms.Resize((299,299)),
-            transforms.Resize(input_size),
-            transforms.CenterCrop(input_size),
+            transforms.Resize((input_size, input_size)),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])

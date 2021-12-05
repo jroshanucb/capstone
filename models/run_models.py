@@ -48,7 +48,7 @@ def run_models(img_directory,
                   'deer',
                   'coyote',
                   'wolf',
-                    'blank']).sort_values(0)
+                  'blank']).sort_values(0)
     stage_2_effnet_labels = stage_2_effnet_labels.rename(columns = {0: 'species'})
     stage_2_effnet_labels.insert(0, 'label', range(0, len(stage_2_effnet_labels)))
 
@@ -70,7 +70,7 @@ def run_models(img_directory,
 
     model_result_list.append(model_2_df)
     torch.cuda.empty_cache()
-    
+
     #Model 3: Yolo Species
     model_3_df = run_format_yolo(img_directory, 'yolov5x_splits4_best.pt', imgsz,
      stage_2_yolo_labels, 3, run_blur = True)
