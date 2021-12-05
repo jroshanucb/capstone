@@ -40,7 +40,7 @@ path= weights_path, force_reload=True)
 
     for img_name in os.listdir(img_directory):
         if img_name[-4:] == '.jpg' or img_name[-4:] == 'jpeg':
-            print(img_name)
+            print(img_directory+img_name)
             img = cv2.imread(img_directory+img_name)[:, :, ::-1]
             imgs.append(img)
             img_names.append(img_name)
