@@ -2,7 +2,10 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 import json
+import cv2
 from pathlib import Path
+import glob
+import re
 
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -191,8 +194,6 @@ def print_metrics(event_images_table, truth_file_path):
     y_true = truth_pred_df_no_other['CLASS_SPECIES_RESTATED']
     y_pred = truth_pred_df_no_other['species_name']
 
-    print(y_true.unique())
-    print(y_pred.unique())
     print(classification_report(y_true, y_pred, target_names=label_list))
 
 def increment_path(path, exist_ok=False, sep='', mkdir=True):
@@ -227,7 +228,7 @@ def print_bbox_images(event_images_table, read_img_directory, write_img_director
                 image = cv2.imread(read_img_directory + img_name)
 
                 if bbox_json == 'None':
-                    cv2.imwrite('bbox_images/' + img_name, image)
+                    cv2.imwrite('../results/bbox_images/' + img_name, image)
                 else:
                     if isinstance(bbox_json, dict):
                         bbox_dict = bbox_json
