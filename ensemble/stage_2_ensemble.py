@@ -10,7 +10,7 @@ from os.path import isfile, join
 
 
 #Read lines from txt results file
-top_path = '../results/'
+top_path = 'results/'
 output_file = 'full_model_output.csv'
 
 #YOLO Species Logic
@@ -352,7 +352,13 @@ def output_final_pred_conf(x, dict_col):
   #   return x[top_ind[0]]
   return dict_col[x]
 
-def run_ensemble_stage_2(modelsz = 'small'):
+def yolo_final_pred(top_pred):
+    if top_pred == 'blank':
+        return 'blank'
+    else:
+        return list(top_pred.keys())[0]
+
+def run_ensemble_stage_2(modelsz):
 
     sample_input = pd.read_csv(top_path + output_file)
 
@@ -366,9 +372,10 @@ def run_ensemble_stage_2(modelsz = 'small'):
     df_model_id3['top_pred'] = df_model_id3.apply(lambda x: get_pred_from_top3(x.consol_dict), axis=1)
     df_model_id3['top3_dict'] = df_model_id3.apply(lambda x: get_topk(merge_species_conf_dict(x.img1_species_conf_dict, x.img2_species_conf_dict, x.img3_species_conf_dict),3), axis=1)
     if modelsz == 'small':
+        df_model_id3 =  df_model_id3.rename(columns = {'consol_dict': 'consol_dict_model_3'})
         df_model_id3['consol_dict_model_4'] = ''
         df_model_id3['event_final_topk_conf'] = ''
-        df_model_id3['event_final_pred'] = df_model_id3['top_pred']
+        df_model_id3['event_final_pred'] = df_model_id3['top_pred'].apply(lambda top_pred: yolo_final_pred(top_pred))
 
         return df_model_id3[['image_group_id','consol_dict_model_3', 'consol_dict_model_4', 'event_final_topk_conf', 'event_final_pred']]
 
