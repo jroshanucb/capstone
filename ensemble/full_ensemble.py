@@ -295,7 +295,7 @@ def run_full_ensemble(modelsz = 'small',
     write_images = 'true',
     img_size=329):
     full_ensemble = merge_ensemble_scripts(modelsz)
-    full_ensemble.to_csv('../results/full_ensemble_int.csv', index = False)
+
     event_images_table = full_ensemble_logic(full_ensemble, modelsz)
 
     event_images_table.to_csv('../results/event_images_table.csv', index = False)
