@@ -248,7 +248,11 @@ def print_metrics_top3(event_images_table, truth_file_path):
     # labels, title and ticks
     label_font = {'size':'20'}  # Adjust to fit
     ax.set_xlabel('Predicted labels', fontdict=label_font);ax.set_ylabel(
+<<<<<<< Updated upstream
                   'True labels', fontdict=label_font);
+=======
+              'True labels', fontdict=label_font);
+>>>>>>> Stashed changes
     ax.set_title('Confusion Matrix');
     ax.xaxis.set_ticklabels(label_list); ax.yaxis.set_ticklabels(label_list);
     plt.xticks(rotation = 45)
@@ -291,7 +295,7 @@ def print_bbox_images(event_images_table, read_img_directory, write_img_director
                 image = cv2.imread(read_img_directory + img_name)
 
                 if bbox_json == 'None':
-                    cv2.imwrite('../results/bbox_images/' + img_name, image)
+                    cv2.imwrite(write_img_directory + '/' + img_name, image)
                 else:
                     if isinstance(bbox_json, dict):
                         bbox_dict = bbox_json
@@ -306,7 +310,7 @@ def print_bbox_images(event_images_table, read_img_directory, write_img_director
                         bbox_list = bbox_dict['C']
 
                     if bbox_list == []:
-                        cv2.imwrite('bbox_images/' + img_name, image)
+                        cv2.imwrite(write_img_directory + '/' + img_name, image)
                         continue
 
                     if isinstance(bbox_list[0] , list):
