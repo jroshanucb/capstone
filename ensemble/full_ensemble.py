@@ -20,8 +20,8 @@ from ensemble.stage_1_ensemble import run_ensemble_stage_1
 from ensemble.stage_2_ensemble import run_ensemble_stage_2
 from ensemble.stage_3_ensemble import run_ensemble_stage_3
 
-db_image_dir = 'https://wisconsintrails.s3.us-west-2.amazonaws.com/images/'
-db_bbox_image_dir = 'https://wisconsintrails.s3.us-west-2.amazonaws.com/bboximages/'
+db_image_dir = 'https://capstone-trails-cam.s3.us-west-2.amazonaws.com/project/images/'
+db_bbox_image_dir = 'https://capstone-trails-cam.s3.us-west-2.amazonaws.com/project/bboximages/'
 
 def merge_ensemble_scripts(modelsz):
     #Merge stage 1 (blanks) and stage 2 (species)
@@ -153,6 +153,9 @@ def full_ensemble_logic(full_ensemble, modelsz):
 
     event_images_table.insert(0, 'event_id', range(0, len(event_images_table)))
 
+    event_images_table = event_images_table.replace({'cottontail_snowshoehare': 'rabbit',
+                                'foxgray_foxred': 'fox'})
+
     #Load date
     now = datetime.now() # current date and time
     date_string = now.strftime("%m/%d/%Y")
@@ -163,6 +166,9 @@ def full_ensemble_logic(full_ensemble, modelsz):
 def print_metrics(event_images_table, truth_file_path):
     #Test to Ground truth
     truth_file = pd.read_csv(truth_file_path)
+
+    truth_file = truth_file.replace({'cottontail_snowshoehare': 'rabbit',
+                                'foxgray_foxred': 'fox'})
 
     truth_pred_df = pd.merge(truth_file, event_images_table,
              right_on = 'image_group_id',
@@ -199,6 +205,9 @@ def print_metrics(event_images_table, truth_file_path):
 def print_metrics_top3(event_images_table, truth_file_path):
     #Test to Ground truth
     truth_file = pd.read_csv(truth_file_path)
+
+    truth_file = truth_file.replace({'cottontail_snowshoehare': 'rabbit',
+                                'foxgray_foxred': 'fox'})
 
     event_images_table = pd.merge(truth_file, event_images_table,
              right_on = 'image_group_id',
