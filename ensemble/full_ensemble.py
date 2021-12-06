@@ -248,11 +248,7 @@ def print_metrics_top3(event_images_table, truth_file_path):
     # labels, title and ticks
     label_font = {'size':'20'}  # Adjust to fit
     ax.set_xlabel('Predicted labels', fontdict=label_font);ax.set_ylabel(
-<<<<<<< Updated upstream
                   'True labels', fontdict=label_font);
-=======
-              'True labels', fontdict=label_font);
->>>>>>> Stashed changes
     ax.set_title('Confusion Matrix');
     ax.xaxis.set_ticklabels(label_list); ax.yaxis.set_ticklabels(label_list);
     plt.xticks(rotation = 45)
