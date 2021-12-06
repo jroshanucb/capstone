@@ -242,11 +242,13 @@ def print_metrics_top3(event_images_table, truth_file_path):
 
     cm = confusion_matrix(test_actuals, test_preds, labels=label_list)
     ax= plt.subplot()
+    sns.set(font_scale=2) # Adjust to fit
     sns.heatmap(cm, annot=True, fmt='g', ax=ax, cmap="Blues"); #annot=True to annotate cells, ftm='g' to disable scientific notation
 
     # labels, title and ticks
-    ax.set_xlabel('Predicted labels');ax.set_ylabel(
-        'True labels');
+    label_font = {'size':'20'}  # Adjust to fit
+    ax.set_xlabel('Predicted labels', fontdict=label_font);ax.set_ylabel(
+                  'True labels', fontdict=label_font);
     ax.set_title('Confusion Matrix');
     ax.xaxis.set_ticklabels(label_list); ax.yaxis.set_ticklabels(label_list);
     plt.xticks(rotation = 45)
