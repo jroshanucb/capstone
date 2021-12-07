@@ -18,7 +18,7 @@ CAMinos 🦌 applies computer vision to trail camera images to help automate the
 <summary>Install</summary>
 
 [**Python>=3.6.0**](https://www.python.org/), [**Pip3**](https://pip.pypa.io/en/stable/) is required with all
-[requirements.ssh](https://github.com/ultralytics/yolov5/blob/master/requirements.txt) installed including
+[requirements.sh](https://github.com/ultralytics/yolov5/blob/master/requirements.txt) installed including
 [**PyTorch>=1.7**](https://pytorch.org/get-started/locally/) and [**Tensorflow>=1.13**](https://github.com/tensorflow/tensorflow) or if running on GPU, [**Tensorflow-GPU>=1.13**](https://pypi.org/project/tensorflow-gpu/).
 <!-- $ sudo apt update && apt install -y libgl1-mesa-glx libsm6 libxext6 libxrender-dev -->
 
