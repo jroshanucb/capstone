@@ -102,7 +102,8 @@ Arguments:
 ## <div align="center">Web Application</div>
 
 <details open>
-<summary>Run the Web App</summary>
+<summary><b>Run the Web App</b></summary>
+
 
 To run the web application locally 
 
@@ -123,6 +124,7 @@ Refer the [Dockerfle](https://github.com/jroshanucb/capstone-deploy/blob/main/sr
 
 <details open>
 <summary><b>Web Environment Setup</b></summary>
+
 
 Web development environment requires nodejs for npm. Using npm, we can install angular. 
 
@@ -212,7 +214,8 @@ The above command makes the API backend server run on port 5000. This is the url
 </details>
 
 <details open>
-<summary>What's needed to deploy this Web App on a different server?</summary>
+<summary><b>What's needed to deploy this Web App on a different server?</b></summary>
+
 
 To deploy the webserver on a different server environment, ensure appropriate setups from **Web Environment Setup** section are completed.
 
