@@ -18,6 +18,10 @@ app.config["DEBUG"] = True
 
 cmd_options = None
 data_frame = None
+events_list = [586, 606, 668, 693, 711, 804, 926, 1130, 1352, 1448, 1574, 1593, 1968, 1347, 1351]
+events_ndx = 0
+custom_round = True
+first_false = True
 
 @app.route('/', methods=['GET'])
 def home():
@@ -46,23 +50,41 @@ def getDictFromDf(df):
 def api_all():
     global cmd_options
     global data_frame
+    global events_list
+    global events_ndx
+    global custom_round
+    global first_false
     print(cmd_options)
     print(type(cmd_options))
 
     config_db = "database.ini"
     event_id = request.args.get('event_id', default=0, type=int)
-    print("even_id in GET: ", event_id)
+    print("even_id in GET: ", event_id)     
     # query = "SELECT * FROM public.event_images where image_group_id='SSWI000000019636502'" #Deer
     # query = "SELECT * FROM public.event_images where image_group_id='SSWI000000017069780'"   #Elk
     if (event_id == 0):
-        event_id = random.randint(0, 2190)
+        if (cmd_options.skip == 'custom'):
+            event_id = events_list[0]
+            events_ndx = 1
+        else:
+            event_id = random.randint(0, 2190)
     else:
         if (cmd_options.skip == '1'):
             event_id = event_id + 1
         elif (cmd_options.skip == 'random'):
             event_id = event_id + 1 + random.randint(1, 20)
-        elif (cmd_options.skip == 'custome'):
-            event_id = event_id + 1
+        elif (cmd_options.skip == 'custom'):
+            if (custom_round == True):
+                event_id = events_list[events_ndx]
+                events_ndx = events_ndx + 1
+                if (events_ndx >= len(events_list)):
+                    custom_round = False
+            else:
+                if (first_false == True):
+                    event_id = random.randint(0, 2190)
+                    first_false = False
+                else:
+                    event_id = event_id + 1 + random.randint(1, 20)
         if (event_id > 2190):
             event_id = random.randint(0, 2190)
 
@@ -75,7 +97,7 @@ def api_all():
     print("print from the DB query run: ", df)
     conv_response = getDictFromDf(df)
     print("json conversion: ", conv_response)
-    
+
     return jsonify(conv_response)
     # return jsonify(response_dict)
 
@@ -88,7 +110,6 @@ def annotate():
 
     print("json : ", request_data)
     return jsonify("{'message' : 'success'}")
-
 
 def parse_opt():
     parser = argparse.ArgumentParser()
