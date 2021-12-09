@@ -1,183 +1,180 @@
 <style>
+  .flex-container {
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: center;
+      padding-top: 20px;
+      padding-left: 40px;
+      padding-right: 40px;
+  }
+
+  .container123 {
+      display: flex;
+      flex-flow: row;
+      justify-content: center;
+  }
+
+  .leftcontainer {
+      display: flex;
+      flex-basis: 50%;
+      justify-content: flex-end;
+
+  }
+
+  .rightcontainter {
+      padding-left: 20px;
+      flex-basis: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+
+  }
+
+  .imagecontainer {
+      display: flex;
+      width: 50vw;
+
+  }
+
+  .images {
+      display: flex;
+      width: 90vw;
+  }
+
+  .verticalradiogroup {
+      display: flex;
+      flex-direction: column;
+  }
+
+  .example-spacer {
+      flex: 1 1 auto;
+  }
+
+  .mat-toolbar h4 {
+      font-style: normal;
+      font-variant-ligatures: normal;
+      font-variant-caps: normal;
+      font-variant-numeric: normal;
+      font-variant-east-asian: normal;
+      font-weight: 100;
+      font-stretch: normal;
+      font-weight: bold;
+      font-size: 16px;
+      line-height: 32px;
+      font-family: Roboto, "Helvetica Neue", sans-serif;
+  }
 
 
+  .panel {
+      position: relative;
+      background-size: 800px;
+      background-position: center;
+      background-repeat: no-repeat;
+      height: 85vh;
+      border-radius: 5px;
+      color: #ffffff;
+      cursor: pointer;
+      flex: .5;
+      margin: 10px;
+      transition: all 700ms ease;
+  }
 
-    .flex-container {
-        display: flex;
-        flex-flow: row wrap;
-        justify-content: center;
-        padding-top: 20px;
-        padding-left: 40px;
-        padding-right: 40px;
-    }
+  .panel.active {
+      flex: 5;
+  }
 
-    .container123 {
-        display: flex;
-        flex-flow: row;
-        justify-content: center;
-    }
+  .subright {
+      width: 300px;
+      padding-top: 44px;
+  }
 
-    .leftcontainer {
-        display: flex;
-        flex-basis: 50%;
-        justify-content: flex-end;
+  .buttonsection {
+      display: flex;
+      flex-flow: row wrap;
+      padding: 20px;
+      justify-content: center;
+      grid-gap: 25px;
+  }
 
-    }
+  .countsection {
+      padding-top: 20px;
+  }
 
-    .rightcontainter {
-        padding-left: 20px;
-        flex-basis: 50%;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
+  .mat-slider-horizontal {
+      width: 100%;
+  }
 
-    }
+  .mat-toolbar {
+      background: #a2a586;
+      color: white;
+  }
 
-    .imagecontainer {
-        display: flex;
-        width: 50vw;
+  .leftleftcontainer {
+      display: flex;
+      flex-direction: column;
+      padding-right: 20px;
+      align-items: flex-end;
+  }
 
-    }
+  mat-slide-toggle {
+      padding-right: 10px;
+  }
 
-    .images {
-        display: flex;
-        width: 90vw;
-    }
+  .mat-slide-toggle.mat-checked .mat-slide-toggle-bar {
+      background-color: rgb(170 235 168);
+  }
 
-    .verticalradiogroup {
-        display: flex;
-        flex-direction: column;
-    }
+  .mat-slide-toggle.mat-checked .mat-slide-toggle-thumb {
+      background-color: #42b36a;
+  }
 
-    .example-spacer {
-        flex: 1 1 auto;
-    }
+  .btn {
+      border: none;
+      outline: none;
+      padding: 5px 5px;
+      background-color: #f1f1f1;
+      cursor: pointer;
+      font-size: 18px;
+      width: 150px;
+      margin-bottom: 5px;
+  }
 
-    .mat-toolbar h4 {
-        font-style: normal;
-        font-variant-ligatures: normal;
-        font-variant-caps: normal;
-        font-variant-numeric: normal;
-        font-variant-east-asian: normal;
-        font-weight: 100;
-        font-stretch: normal;
-        font-weight: bold;
-        font-size: 16px;
-        line-height: 32px;
-        font-family: Roboto, "Helvetica Neue", sans-serif;
-    }
+  /* Style the active class, and buttons on mouse-over */
+  .active,
+  .btn:hover {
+      background-color: #666;
+      color: white;
+  }
 
+  #myDIV {
+      display: flex;
+      flex-direction: row;
+  }
 
-    .panel {
-        position: relative;
-        background-size: 800px;
-        background-position: center;
-        background-repeat: no-repeat;
-        height: 85vh;
-        border-radius: 5px;
-        color: #ffffff;
-        cursor: pointer;
-        flex: .5;
-        margin: 10px;
-        transition: all 700ms ease;
-    }
+  .firstcolumn {
+      display: flex;
+      flex-direction: column;
+      margin-right: 5px;
+  }
+  a{
+      color:white
+  }
+  .customtext{
+      font-family: "Open Sans", sans-serif;
+      color: #444444;
+      font-size: 1rem;
+      font-weight: 400;
+      line-height: 1.5;
+      text-align:justify;
+  }
 
-
-    .panel.active {
-        flex: 5;
-    }
-
-    .subright {
-        width: 300px;
-        padding-top: 44px;
-    }
-
-    .buttonsection {
-        display: flex;
-        flex-flow: row wrap;
-        padding: 20px;
-        justify-content: center;
-        grid-gap: 25px;
-    }
-
-    .countsection {
-        padding-top: 20px;
-    }
-
-    .mat-slider-horizontal {
-        width: 100%;
-    }
-
-    .mat-toolbar {
-        background: #a2a586;
-        color: white;
-    }
-
-    .leftleftcontainer {
-        display: flex;
-        flex-direction: column;
-        padding-right: 20px;
-        align-items: flex-end;
-    }
-
-    mat-slide-toggle {
-        padding-right: 10px;
-    }
-
-    .mat-slide-toggle.mat-checked .mat-slide-toggle-bar {
-        background-color: rgb(170 235 168);
-    }
-
-    .mat-slide-toggle.mat-checked .mat-slide-toggle-thumb {
-        background-color: #42b36a;
-    }
-
-    .btn {
-        border: none;
-        outline: none;
-        padding: 5px 5px;
-        background-color: #f1f1f1;
-        cursor: pointer;
-        font-size: 18px;
-        width: 150px;
-        margin-bottom: 5px;
-    }
-
-    /* Style the active class, and buttons on mouse-over */
-    .active,
-    .btn:hover {
-        background-color: #666;
-        color: white;
-    }
-
-    #myDIV {
-        display: flex;
-        flex-direction: row;
-    }
-
-    .firstcolumn {
-        display: flex;
-        flex-direction: column;
-        margin-right: 5px;
-    }
-    a{
-        color:white
-    }
-    .customtext{
-        font-family: "Open Sans", sans-serif;
-        color: #444444;
-        font-size: 1rem;
-        font-weight: 400;
-        line-height: 1.5;
-        text-align:justify;
-    }
-.fixed-top {
-    position: fixed;
-    top: 0;
-    right: 0;
-    left: 0;
-    z-index: 1030;
-}
+  .fixed-top {
+      position: fixed;
+      top: 0;
+      right: 0;
+      left: 0;
+      z-index: 1030;
+  }
 </style>
 
 <p>
@@ -326,11 +323,32 @@
           </div>
     
           <p class="customtext">
-            CAMinos applies computer vision to trail camera images to help automate the annotation process. Our deep learning system predicts both the animal species and the count of animals caught on trail camera images using an ensemble approach that consists of both object detection and classification algorithms. These predictions are then supplied as recommendations to users as they label images in our custom-built annotation tool. Caminos streamlines the annotation process for users, resulting in much faster annotation times and providing a valuable resource to the wildlife conservation community.
+            The models can be run at inference time in 3 different configurations. The small ensemble sacrifices a bit in terms of accuracy but  is lightning fast, performing inference at 27 images per second This is great for users with thousands of trail camera images streaming in per hour.
+            The medium ensemble is a good middle ground, with very solid performance while still running fast
+            And the large model performs the best across the board but sacrifices speed, making it a good choice when images are being run in batch, without time constraints
+          </p>
+          <div class="col-lg-6 pt-4 pt-lg-0" style="margin-top: 40px;">
+            <img src="/assets/images/3models.png" alt="">
+          </div>
+          <p class="customtext" style="margin-top: 40px;">
+            So here we illustrate the performance of our 3 models across the two stages, taken as an average. 
+            For example, in the case of EfficientNet, stage 1 accuracy is 90% (animal vs blank) and stage 2 accuracy is 74% (classification of 11 classes), so the average is 82%.
+            But if we take a look at our ensemble, we see a classic case where the whole is greater than the sum of its parts as we have an average stage accuracy of 85%.
+            Thus, we’ve taken our models a bit further from using this ensemble approach.
+          </p>
+          <p>
+            <b>(stage1 + stage2) / 2</b>
           </p>
           <div class="col-lg-6 pt-4 pt-lg-0" style="margin-top: 40px;">
             <img src="/assets/images/perf.png" alt="">
           </div>
+          <p style="margin-top: 40px;">
+            So here is a view of Caminos' large model performance in the classification setting.
+            Where our model is confused the most, pertain to species of similar sizes such as wolf and coyote, and smaller animals like opossum, turkeys and rabbits.
+            We found that camouflaged species were confused with blanks as well, in the case with deer and rabbits.
+            However, these are the result of top1 predictions. If we expand our prediction scope to our top3 most confident predictions, even when similar-looking species are confused, the correct species is often found within the top3, as we would jump to 94% accuracy. 
+            If we display the top3 predictions along with their confidence scores in the UI, users would still be able to correct the prediction using the suggestions powered by Caminos.
+          </p>
           <div class="col-lg-6 pt-4 pt-lg-0" style="margin-top: 40px;">
             <img src="/assets/images/model-results.png" alt="">
           </div>
@@ -346,28 +364,25 @@
         <h2>Architecture & Web Application</h2>
         <p>Architecture</p>
       </div>
-
       <div class="row content aos-init aos-animate" data-aos="fade-up">
         <div class="col-lg-6">
           <p class="customtext">
-            Some text will go here that explains about the Architecture
+            The data pipeline architecture is setup to run each of the staged models in an asynchronous manner.
+            Each of the python scripts are configured to run on a GPU based EC2 instance.
           </p>
-  
           <div class="section-title aos-init aos-animate" data-aos="zoom-out" style="margin-top: 40px;margin-bottom: -15px;">
             <p>Web Application</p>
           </div>
+          <p class="customtext" style="max-width: 920px;">
+            The web application is an Angular Single Page Application (SPA). It is built and deployed in a production mode on the Nginx server.
+            Nginx serves as a reverse proxy into the Web Server Gateway Inerface (WSGI), Gunicorn. The API server is implemented as a Flask based
+            service that prvides a GET & POST service. It interacts with the Postgres DB on these services appropriately.
 
+            The entire web application is packaged into a docker container as well.
+          </p>
           <div class="col-lg-6 pt-4 pt-lg-0" style="margin-top: 40px;">
             <img src="/assets/images/data-web-arch.png" alt="">
-          </div>    
-          
-          <p class="customtext">
-            CAMinos applies computer vision to trail camera images to help automate the annotation process. Our deep learning system 
-            predicts both the animal species and the count of animals caught on trail camera images using an ensemble approach that 
-            consists of both object detection and classification algorithms. These predictions are then supplied as recommendations to 
-            users as they label images in our custom-built annotation tool. Caminos streamlines the annotation process for users, resulting in 
-            much faster annotation times and providing a valuable resource to the wildlife conservation community.
-          </p>
+          </div>              
         </div>
       </div>
     </div>
