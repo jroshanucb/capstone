@@ -46,7 +46,7 @@ path= weights_path, force_reload=True)
             img_names.append(img_name)
 
 
-    batch_size = 1000
+    batch_size = 500
     num_images = len(img_names)
     num_batches = int(math.ceil(num_images/batch_size))
 

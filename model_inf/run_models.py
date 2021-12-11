@@ -3,6 +3,7 @@ import os
 import sys
 import pandas as pd
 import numpy as np
+import time
 from datetime import datetime
 import warnings
 warnings.filterwarnings("ignore")
@@ -82,6 +83,9 @@ def run_ensemble_models(img_directory,
 
         torch.cuda.empty_cache()
 
+
+
+    time.sleep(5)
     #Model 2: Effnet Blank
     if modelsz == 'small':
         print('''
@@ -98,6 +102,7 @@ def run_ensemble_models(img_directory,
     model_result_list.append(model_2_df)
     torch.cuda.empty_cache()
 
+    time.sleep(5)
     #Model 3: Yolo Species
     if modelsz == 'small':
         print('''
@@ -115,6 +120,7 @@ def run_ensemble_models(img_directory,
     torch.cuda.empty_cache()
 
     if modelsz in ['medium', 'large']:
+        time.sleep(5)
         #Model 4: Effnet Species
         print('''
         Running EfficientNet Species, Model 4 of {}.
@@ -126,6 +132,7 @@ def run_ensemble_models(img_directory,
         torch.cuda.empty_cache()
 
     if modelsz in ['large']:
+        time.sleep(5)
         #Model 5: Megadetector
         print('''
         Running Megadetector Count, Model 5 of 5.
