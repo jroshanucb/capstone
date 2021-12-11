@@ -69,67 +69,67 @@ def run_ensemble_models(img_directory,
     elif modelsz == 'large':
         total_model_num = 5
 
-    # #Model 1: Yolo Blank
-    # if modelsz in ['medium', 'large']:
-    #
-    #
-    #     print('''
-    #     Running Yolov5 Blank, Model 1 of {}.
-    #     '''.format(total_model_num))
-    #
-    #     model_1_df = run_format_yolo(img_directory, 'weights/yolov5l_best_blank.pt', imgsz,
-    #      stage_1_labels, 1, run_blur = False)
-    #     model_result_list.append(model_1_df)
-    #
-    #     torch.cuda.empty_cache()
-    #
-    #
-    #
-    # time.sleep(5)
-    # #Model 2: Effnet Blank
-    # if modelsz == 'small':
-    #     print('''
-    #     Running EfficientNet B0 Blank, Model 1 of {}.
-    #     '''.format(total_model_num))
-    # elif modelsz in ['medium', 'large']:
-    #     print('''
-    #     Running EfficientNet B0 Blank, Model 2 of {}.
-    #     '''.format(total_model_num))
-    #
-    # model_2_weights_path = 'weights/efficientnetb0_50epochs_finetuned_model_yolosplits3_blanks.pt'
-    # model_2_df = run_format_effnet(img_directory, model_2_weights_path, 224, stage_1_labels, 2)
-    #
-    # model_result_list.append(model_2_df)
-    # torch.cuda.empty_cache()
-    #
-    # time.sleep(5)
-    # #Model 3: Yolo Species
-    # if modelsz == 'small':
-    #     print('''
-    #     Running Yolov5 Species and Count, Model 2 of {}.
-    #     '''.format(total_model_num))
-    # elif modelsz in ['medium', 'large']:
-    #     print('''
-    #     Running Yolov5 Species and Count, Model 3 of {}.
-    #     '''.format(total_model_num))
-    #
-    # model_3_df = run_format_yolo(img_directory, 'weights/yolov5x_splits4_best.pt', imgsz,
-    #  stage_2_yolo_labels, 3, run_blur = True)
-    # model_result_list.append(model_3_df)
-    #
-    # torch.cuda.empty_cache()
-    #
-    # if modelsz in ['medium', 'large']:
-    #     time.sleep(5)
-    #     #Model 4: Effnet Species
-    #     print('''
-    #     Running EfficientNet Species, Model 4 of {}.
-    #     '''.format(total_model_num))
-    #
-    #     model_4_weights_path = 'weights/efficientnetb5_25epochs_finetuned_model_yolosplits4_456_BasePlusBlank.pt'
-    #     model_4_df = run_format_effnet(img_directory, model_4_weights_path, 456, stage_2_effnet_labels, 4)
-    #     model_result_list.append(model_4_df)
-    #     torch.cuda.empty_cache()
+    #Model 1: Yolo Blank
+    if modelsz in ['medium', 'large']:
+
+
+        print('''
+        Running Yolov5 Blank, Model 1 of {}.
+        '''.format(total_model_num))
+
+        model_1_df = run_format_yolo(img_directory, 'weights/yolov5l_best_blank.pt', imgsz,
+         stage_1_labels, 1, run_blur = False)
+        model_result_list.append(model_1_df)
+
+        torch.cuda.empty_cache()
+
+
+
+    time.sleep(5)
+    #Model 2: Effnet Blank
+    if modelsz == 'small':
+        print('''
+        Running EfficientNet B0 Blank, Model 1 of {}.
+        '''.format(total_model_num))
+    elif modelsz in ['medium', 'large']:
+        print('''
+        Running EfficientNet B0 Blank, Model 2 of {}.
+        '''.format(total_model_num))
+
+    model_2_weights_path = 'weights/efficientnetb0_50epochs_finetuned_model_yolosplits3_blanks.pt'
+    model_2_df = run_format_effnet(img_directory, model_2_weights_path, 224, stage_1_labels, 2)
+
+    model_result_list.append(model_2_df)
+    torch.cuda.empty_cache()
+
+    time.sleep(5)
+    #Model 3: Yolo Species
+    if modelsz == 'small':
+        print('''
+        Running Yolov5 Species and Count, Model 2 of {}.
+        '''.format(total_model_num))
+    elif modelsz in ['medium', 'large']:
+        print('''
+        Running Yolov5 Species and Count, Model 3 of {}.
+        '''.format(total_model_num))
+
+    model_3_df = run_format_yolo(img_directory, 'weights/yolov5x_splits4_best.pt', imgsz,
+     stage_2_yolo_labels, 3, run_blur = True)
+    model_result_list.append(model_3_df)
+
+    torch.cuda.empty_cache()
+
+    if modelsz in ['medium', 'large']:
+        time.sleep(5)
+        #Model 4: Effnet Species
+        print('''
+        Running EfficientNet Species, Model 4 of {}.
+        '''.format(total_model_num))
+
+        model_4_weights_path = 'weights/efficientnetb5_25epochs_finetuned_model_yolosplits4_456_BasePlusBlank.pt'
+        model_4_df = run_format_effnet(img_directory, model_4_weights_path, 456, stage_2_effnet_labels, 4)
+        model_result_list.append(model_4_df)
+        torch.cuda.empty_cache()
 
     if modelsz in ['large']:
         time.sleep(5)
