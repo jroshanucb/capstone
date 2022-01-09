@@ -249,3 +249,17 @@ Access the web application from the browser using the url specified in the API S
 Note that the API service and the webserver are running on the same EC2 instance in this configuration but they are running on 2 different ports (5000 & 8080 respectively)
 
 </details>
+
+# Repo Structure
+
+    ├── README.md	<- The top-level README for developers using this project.
+    ├── caminos_inference.py	<- Script to run full inference as specified above.
+    ├── download_test_image_set.sh	<- download test data (6k images from SWI)
+    ├── requirements.sh  <- download and install packages required to run full caminos inference
+    ├── data    <- directory containing series of .pynb notebooks to convert images to required format and structure needed to run training. 
+    ├── model_inf    <- directory containing scripts to run inference on images. These are all run through caminos_inference.py.
+    ├── ensemble    <- directory containing scripts merge inference results through ensemble logic. These are all run through caminos_inference.py.
+    ├── results    <- directory containing results files after running inference, including final predictions and images with bounding boxes. These are all produced through caminos_inference.py.
+    ├── src    <- front end.
+    ├── train    <- pynb notebook to train efficientnet.
+    ├── extras    <- misc images
