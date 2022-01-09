@@ -250,7 +250,7 @@ Note that the API service and the webserver are running on the same EC2 instance
 
 </details>
 
-# Repo Structure
+## <div align="center">Repo Structure</div>
 
     ├── README.md	<- The top-level README for developers using this project.
     ├── caminos_inference.py	<- Script to run full inference as specified above.
